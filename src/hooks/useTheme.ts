@@ -25,10 +25,12 @@ export function useTheme() {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    // Keep the PWA system UI bars (status/navigation) in step with the in-app theme. The
-    // theme-color meta has no media query, so it follows our resolved theme, not the OS.
-    const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute('content', theme === 'dark' ? '#09090b' : '#fafafa');
+    // Keep the PWA system UI bars in step with the in-app theme (overriding the OS preference):
+    // theme-color drives the top status bar, color-scheme the bottom Android navigation bar.
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', theme === 'dark' ? '#09090b' : '#fafafa');
+    document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', theme);
     try {
       localStorage.setItem('theme', theme);
     } catch {

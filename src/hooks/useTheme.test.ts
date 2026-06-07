@@ -5,13 +5,15 @@ import { useTheme } from './useTheme';
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.classList.remove('dark');
-  let meta = document.querySelector('meta[name="theme-color"]');
-  if (!meta) {
-    meta = document.createElement('meta');
-    meta.setAttribute('name', 'theme-color');
-    document.head.appendChild(meta);
+  for (const name of ['theme-color', 'color-scheme']) {
+    let meta = document.querySelector(`meta[name="${name}"]`);
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', name);
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', 'x');
   }
-  meta.setAttribute('content', '#000000');
 });
 
 describe('useTheme', () => {
@@ -27,6 +29,10 @@ describe('useTheme', () => {
     expect(localStorage.getItem('theme')).toBe(after);
     expect(document.querySelector('meta[name="theme-color"]')?.getAttribute('content')).toBe(
       after === 'dark' ? '#09090b' : '#fafafa',
+    );
+    // color-scheme meta drives the Android system navigation bar in a standalone PWA.
+    expect(document.querySelector('meta[name="color-scheme"]')?.getAttribute('content')).toBe(
+      after,
     );
   });
 

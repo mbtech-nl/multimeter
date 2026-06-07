@@ -3,10 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Single theme-color (no media query): the in-app toggle overrides the OS preference,
-         so the system UI bars must follow the app's resolved theme, not prefers-color-scheme.
-         The pre-paint script below sets the right value; useTheme keeps it in sync on toggle. -->
+    <!-- Single theme-color + color-scheme (no media query): the in-app toggle overrides the OS
+         preference, so the system UI must follow the app's resolved theme. theme-color drives
+         the top status bar; color-scheme drives the bottom Android navigation bar in a standalone
+         PWA. The pre-paint script sets both; useTheme keeps them in sync on toggle. -->
     <meta name="theme-color" content="#09090b" />
+    <meta name="color-scheme" content="dark" />
 
     <title>Multimeter — Bluetooth DMM logger in your browser (UNI-T UT60BT)</title>
     <meta
@@ -52,6 +54,8 @@
           if (t === 'dark') document.documentElement.classList.add('dark');
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', t === 'dark' ? '#09090b' : '#fafafa');
+          var cs = document.querySelector('meta[name="color-scheme"]');
+          if (cs) cs.setAttribute('content', t);
         } catch (e) {}
       })();
     </script>
