@@ -1,0 +1,40 @@
+{
+  "name": "@mbtech-nl/multimeter-recorder",
+  "version": "0.0.0",
+  "description": "Bluetooth-independent recording engine + IndexedDB session store for BLE multimeters.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mbtech-nl/multimeter-protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.5",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.8"
+  }
+}

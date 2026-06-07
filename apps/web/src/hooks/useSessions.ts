@@ -1,10 +1,10 @@
 // Backs the Sessions list (PLAN §3.3): browse persisted recordings, reopen one read-only,
-// re-export its CSV, rename, or delete. All data comes from lib/storage; this hook just
+// re-export its CSV, rename, or delete. All data comes from the recorder package's storage;
 // holds the list + the currently-opened session in React state.
 
 import { useCallback, useEffect, useState } from 'react';
 import type { Reading, Session } from '@mbtech-nl/multimeter-protocol';
-import * as storage from '../lib/storage';
+import { storage } from '@mbtech-nl/multimeter-recorder';
 import { toCsv } from '@mbtech-nl/multimeter-protocol';
 import { downloadText, slug } from '../lib/download';
 

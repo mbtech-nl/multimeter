@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@mbtech-nl/multimeter-protocol": "workspace:*",
+    "@mbtech-nl/multimeter-recorder": "workspace:*",
     "@mbtech-nl/multimeter-web-bluetooth": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

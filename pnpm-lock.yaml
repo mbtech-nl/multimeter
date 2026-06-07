@@ -13,6 +13,9 @@ importers:
       '@mbtech-nl/multimeter-protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
+      '@mbtech-nl/multimeter-recorder':
+        specifier: workspace:*
+        version: link:../../packages/recorder
       '@mbtech-nl/multimeter-web-bluetooth':
         specifier: workspace:*
         version: link:../../packages/web-bluetooth
@@ -107,6 +110,25 @@ importers:
 
   packages/protocol:
     devDependencies:
+      tsup:
+        specifier: ^8.3.5
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.8
+        version: 4.1.8(@vitest/coverage-v8@4.1.8)(jsdom@29.1.1)(vite@6.4.3(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0))
+
+  packages/recorder:
+    dependencies:
+      '@mbtech-nl/multimeter-protocol':
+        specifier: workspace:*
+        version: link:../protocol
+    devDependencies:
+      fake-indexeddb:
+        specifier: ^6.2.5
+        version: 6.2.5
       tsup:
         specifier: ^8.3.5
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(typescript@5.9.3)

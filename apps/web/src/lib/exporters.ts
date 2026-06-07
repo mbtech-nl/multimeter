@@ -1,12 +1,12 @@
 // Export actions shared by the ExportButtons UI and the keyboard shortcuts, so both paths
 // behave identically. CSV is full-resolution from IndexedDB (§3.3); PNG snapshots the
 // chart canvas.
-import { getReadings } from './storage';
+import { storage } from '@mbtech-nl/multimeter-recorder';
 import { toCsv } from '@mbtech-nl/multimeter-protocol';
 import { downloadText, downloadBlob, slug } from './download';
 
 export async function exportCsv(target: { id: string; name: string }): Promise<void> {
-  const readings = await getReadings(target.id);
+  const readings = await storage.getReadings(target.id);
   downloadText(toCsv(readings), `${slug(target.name)}.csv`);
 }
 

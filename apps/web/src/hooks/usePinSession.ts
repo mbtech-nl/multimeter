@@ -8,7 +8,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { quantityKey, type Reading, type Session } from '@mbtech-nl/multimeter-protocol';
-import * as storage from '../lib/storage';
+import { storage } from '@mbtech-nl/multimeter-recorder';
 
 const newId = () =>
   typeof crypto !== 'undefined' && crypto.randomUUID
