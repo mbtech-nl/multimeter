@@ -41,7 +41,10 @@
   --color-zinc-950: #09090b;
 }
 
-/* Match the body to the page surface so there's no flash at the edges / on overscroll. */
+/* Theme the root surface so there's no light flash at the edges / on overscroll, and so the
+   Android system navigation bar (bottom) matches: in a standalone PWA it samples the <html>
+   background, so setting body alone leaves the nav bar on the default light. */
+html,
 body {
   background-color: var(--color-zinc-950);
 }
