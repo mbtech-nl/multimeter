@@ -27,9 +27,10 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
-  // Test files also touch Node/Vitest globals.
+  // Test files also touch Node/Vitest globals, and mocks legitimately use `any`.
   {
     files: ['src/**/*.test.{ts,tsx}', 'src/test/**'],
     languageOptions: { globals: { ...globals.node } },
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
   },
 );
