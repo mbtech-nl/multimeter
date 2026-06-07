@@ -162,13 +162,13 @@ export function decodeVoltcraft(bytes: Uint8Array, ts = 0): Reading {
   if (bytes.length < FRAME_LEN) return blank(ts);
 
   // Primary "symbols" word (little-endian) → function / prefix / decimal-point fields.
-  const symbols = (bytes[1] << 8) | bytes[0];
+  const symbols = (bytes[1]! << 8) | bytes[0]!;
   const fn = (symbols >> 6) & 0x1f;
   const scale = (symbols >> 3) & 0x07;
   const point = symbols & 0x07;
 
-  const negative = (bytes[5] & 0x80) > 0;
-  const count = (bytes[4] << 8) | bytes[3];
+  const negative = (bytes[5]! & 0x80) > 0;
+  const count = (bytes[4]! << 8) | bytes[3]!;
 
   // Overload / underload are signalled by the decimal-point field, not by a digit pattern.
   const overload = point === POINT_OL;
@@ -208,7 +208,7 @@ export function decodeVoltcraft(bytes: Uint8Array, ts = 0): Reading {
   // Mode flags word (little-endian): the source reads it MSB-first as a 16-bit binary string and
   // indexes mode[0..5]. mode[0] is the top bit of the high byte (bytes[13]). Translating those
   // string indices to bit tests: mode[0]=bit15, mode[1]=bit14, … mode[5]=bit10.
-  const mode = (bytes[13] << 8) | bytes[12];
+  const mode = (bytes[13]! << 8) | bytes[12]!;
   const bit = (n: number): boolean => ((mode >> n) & 1) === 1;
   const hold = bit(15); // mode[0]
   const rel = bit(14); // mode[1]
@@ -262,7 +262,7 @@ class VoltcraftFramer implements DriverFramer {
   private buf: number[] = [];
 
   push(chunk: Uint8Array): ParsedFrame[] {
-    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]);
+    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]!);
     const out: ParsedFrame[] = [];
     for (;;) {
       this.sync();
@@ -302,7 +302,7 @@ export const voltcraft: Driver = {
   namePrefixes: ['VC', 'Voltcraft'],
   gatt: { service: FFF0_SERVICE, notify: FFF4_NOTIFY, write: [FFF3_WRITE] },
 
-  match: (ctx) =>
+  match: ctx =>
     (ctx.services?.includes(FFF0_SERVICE) ?? false) ||
     (ctx.name?.startsWith('VC') ?? false) ||
     (ctx.name?.startsWith('Voltcraft') ?? false),

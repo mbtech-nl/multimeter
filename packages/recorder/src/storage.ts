@@ -70,7 +70,7 @@ const sessionRange = (id: string) => IDBKeyRange.bound([id], [id, []]);
 
 export async function createSession(session: Session): Promise<void> {
   const db = await openDb();
-  await tx(db, SESSIONS, 'readwrite', (t) => t.objectStore(SESSIONS).put(session));
+  await tx(db, SESSIONS, 'readwrite', t => t.objectStore(SESSIONS).put(session));
 }
 
 // Append a batch of readings under one transaction (a frame arrives a few times a second;
@@ -82,7 +82,7 @@ export async function appendSamples(
 ): Promise<void> {
   if (readings.length === 0) return;
   const db = await openDb();
-  await tx(db, SAMPLES, 'readwrite', (t) => {
+  await tx(db, SAMPLES, 'readwrite', t => {
     const store = t.objectStore(SAMPLES);
     readings.forEach((r, i) => store.put({ sessionId, seq: startSeq + i, r } as SampleRow));
   });
@@ -92,12 +92,12 @@ export async function appendSamples(
 // drop a mis-captured pin (pins always append at the end, so seq stays contiguous).
 export async function deleteSample(sessionId: string, seq: number): Promise<void> {
   const db = await openDb();
-  await tx(db, SAMPLES, 'readwrite', (t) => t.objectStore(SAMPLES).delete([sessionId, seq]));
+  await tx(db, SAMPLES, 'readwrite', t => t.objectStore(SAMPLES).delete([sessionId, seq]));
 }
 
 export async function updateSession(session: Session): Promise<void> {
   const db = await openDb();
-  await tx(db, SESSIONS, 'readwrite', (t) => t.objectStore(SESSIONS).put(session));
+  await tx(db, SESSIONS, 'readwrite', t => t.objectStore(SESSIONS).put(session));
 }
 
 export async function getSession(id: string): Promise<Session | undefined> {
@@ -118,12 +118,12 @@ export async function getReadings(id: string): Promise<Reading[]> {
   const rows = await reqResult<SampleRow[]>(
     db.transaction(SAMPLES).objectStore(SAMPLES).getAll(sessionRange(id)),
   );
-  return rows.map((row) => row.r);
+  return rows.map(row => row.r);
 }
 
 export async function deleteSession(id: string): Promise<void> {
   const db = await openDb();
-  await tx(db, [SESSIONS, SAMPLES], 'readwrite', (t) => {
+  await tx(db, [SESSIONS, SAMPLES], 'readwrite', t => {
     t.objectStore(SESSIONS).delete(id);
     t.objectStore(SAMPLES).delete(sessionRange(id));
   });

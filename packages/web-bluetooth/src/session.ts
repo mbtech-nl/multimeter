@@ -67,7 +67,7 @@ export class MeterSession {
 
   // What the driver's handshake/keep-alive talk to. The driver never touches the transport.
   private io: DriverIO = {
-    write: (bytes) => this.transport?.write(bytes) ?? Promise.resolve(),
+    write: bytes => this.transport?.write(bytes) ?? Promise.resolve(),
     waitForFrame: (pred, timeoutMs) => this.waitForFrame(pred, timeoutMs),
   };
 
@@ -160,7 +160,7 @@ export class MeterSession {
     this.transport = t;
     try {
       const id = await t.requestAndConnect();
-      const matched = driverById(id) ?? drivers[0];
+      const matched = driverById(id) ?? drivers[0]!;
       const candidates = driversForService(matched.gatt.service);
       if (candidates.length > 1) {
         // Several meter families share this GATT service (0xFFF0). The transport can't tell them
@@ -220,7 +220,7 @@ export class MeterSession {
           clearTimeout(timer);
           resolve();
         },
-        reject: (e) => {
+        reject: e => {
           clearTimeout(timer);
           reject(e);
         },
@@ -260,7 +260,7 @@ export class MeterSession {
         this.driver.onRequest(f, this.io);
       }
       // Wake any handshake step waiting on this kind of frame.
-      for (const w of this.waiters.filter((w) => w.pred(f.kind))) w.resolve();
+      for (const w of this.waiters.filter(w => w.pred(f.kind))) w.resolve();
     }
   };
 
@@ -270,13 +270,13 @@ export class MeterSession {
   };
 
   private waitForFrame(pred: (k: FrameKind) => boolean, timeoutMs: number): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
+    return new Promise<boolean>(resolve => {
       let settled = false;
       const entry = { pred, resolve: () => finish(true) };
       const finish = (ok: boolean): void => {
         if (settled) return;
         settled = true;
-        this.waiters = this.waiters.filter((w) => w !== entry);
+        this.waiters = this.waiters.filter(w => w !== entry);
         resolve(ok);
       };
       this.waiters.push(entry);

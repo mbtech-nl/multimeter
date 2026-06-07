@@ -39,7 +39,7 @@ describe('downloadText', () => {
     downloadText('a,b,c\n1,2,3', 'data.csv');
 
     expect(createObjectURL).toHaveBeenCalledTimes(1);
-    const blob = createObjectURL.mock.calls[0][0] as Blob;
+    const blob = createObjectURL.mock.calls[0]![0] as Blob;
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toBe('text/csv;charset=utf-8');
 
@@ -53,14 +53,14 @@ describe('downloadText', () => {
 
   it('honours a custom MIME type', () => {
     downloadText('{}', 'data.json', 'application/json');
-    const blob = createObjectURL.mock.calls[0][0] as Blob;
+    const blob = createObjectURL.mock.calls[0]![0] as Blob;
     expect(blob.type).toBe('application/json;charset=utf-8');
     expect(anchor.download).toBe('data.json');
   });
 
   it('puts the text into the blob', async () => {
     downloadText('hello world', 'greet.txt', 'text/plain');
-    const blob = createObjectURL.mock.calls[0][0] as Blob;
+    const blob = createObjectURL.mock.calls[0]![0] as Blob;
     expect(await blob.text()).toBe('hello world');
   });
 });

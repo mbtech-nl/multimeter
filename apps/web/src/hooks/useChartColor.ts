@@ -11,7 +11,7 @@ const KEY = 'chartColor';
 function initial(): string {
   try {
     const saved = localStorage.getItem(KEY);
-    if (saved && CHART_COLORS.some((c) => c.key === saved)) return saved;
+    if (saved && CHART_COLORS.some(c => c.key === saved)) return saved;
   } catch {
     // ignore (private mode / blocked storage)
   }

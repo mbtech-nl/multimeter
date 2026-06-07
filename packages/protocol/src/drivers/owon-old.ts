@@ -104,12 +104,12 @@ export function decodeOwonOld(bytes: Uint8Array, ts = 0): Reading {
 
   // Decimal-point position: (byte6 & 0x07) as a 4-bit field, index of its first set bit =
   // digits after the point. 0b000 → index -1 → point 0 (no decimal point).
-  const pointBits = (bytes[6] & 0x07).toString(2).padStart(4, '0');
+  const pointBits = (bytes[6]! & 0x07).toString(2).padStart(4, '0');
   let point = pointBits.indexOf('1');
   if (point < 0) point = 0;
 
   // Four ASCII value digits. The source's OL sentinel is the outer chars being '?'.
-  let digits = String.fromCharCode(bytes[1], bytes[2], bytes[3], bytes[4]);
+  let digits = String.fromCharCode(bytes[1]!, bytes[2]!, bytes[3]!, bytes[4]!);
   const overload = digits.startsWith('?') && digits.endsWith('?');
   if (overload) digits = ' OL ';
 
@@ -120,36 +120,36 @@ export function decodeOwonOld(bytes: Uint8Array, ts = 0): Reading {
   const displayText = text.trim();
 
   // Mode bitfield (byte 7).
-  const hold = isBitSet(bytes[7], 1);
-  const rel = isBitSet(bytes[7], 2);
-  const acdc: Reading['acdc'] = isBitSet(bytes[7], 3) ? 'AC' : isBitSet(bytes[7], 4) ? 'DC' : '';
-  const auto = isBitSet(bytes[7], 5);
+  const hold = isBitSet(bytes[7]!, 1);
+  const rel = isBitSet(bytes[7]!, 2);
+  const acdc: Reading['acdc'] = isBitSet(bytes[7]!, 3) ? 'AC' : isBitSet(bytes[7]!, 4) ? 'DC' : '';
+  const auto = isBitSet(bytes[7]!, 5);
 
   // Min/Max + battery (byte 8).
-  const max = isBitSet(bytes[8], 5);
-  const min = isBitSet(bytes[8], 4);
-  const lowBattery = isBitSet(bytes[8], 3);
+  const max = isBitSet(bytes[8]!, 5);
+  const min = isBitSet(bytes[8]!, 4);
+  const lowBattery = isBitSet(bytes[8]!, 3);
 
   // Scale prefix (byte 9) + unit (byte 10). Diode/continuity also live in byte 9.
-  const diode = isBitSet(bytes[9], 2);
-  const cont = isBitSet(bytes[9], 3);
+  const diode = isBitSet(bytes[9]!, 2);
+  const cont = isBitSet(bytes[9]!, 3);
 
   // Assembled in the source's exact order so prefixes land before the base unit. Note "n"
   // (nano, capacitance) is only emitted when no other byte-9 prefix is present (data[9] == 0).
   let displayUnit = '';
-  if (isBitSet(bytes[10], 1)) displayUnit += '°C';
-  if (isBitSet(bytes[10], 0)) displayUnit += '°F';
-  if (isBitSet(bytes[10], 2) && bytes[9] === 0) displayUnit += 'n';
-  if (isBitSet(bytes[9], 6)) displayUnit += 'm';
-  if (isBitSet(bytes[9], 7)) displayUnit += 'µ';
-  if (isBitSet(bytes[9], 4)) displayUnit += 'M';
-  if (isBitSet(bytes[9], 5)) displayUnit += 'k';
-  if (isBitSet(bytes[10], 7)) displayUnit += 'V';
-  if (isBitSet(bytes[10], 2)) displayUnit += 'F';
-  if (isBitSet(bytes[9], 1)) displayUnit += '%';
-  if (isBitSet(bytes[10], 5)) displayUnit += 'Ω';
-  if (isBitSet(bytes[10], 3)) displayUnit += 'Hz';
-  if (isBitSet(bytes[10], 6)) displayUnit += 'A';
+  if (isBitSet(bytes[10]!, 1)) displayUnit += '°C';
+  if (isBitSet(bytes[10]!, 0)) displayUnit += '°F';
+  if (isBitSet(bytes[10]!, 2) && bytes[9] === 0) displayUnit += 'n';
+  if (isBitSet(bytes[9]!, 6)) displayUnit += 'm';
+  if (isBitSet(bytes[9]!, 7)) displayUnit += 'µ';
+  if (isBitSet(bytes[9]!, 4)) displayUnit += 'M';
+  if (isBitSet(bytes[9]!, 5)) displayUnit += 'k';
+  if (isBitSet(bytes[10]!, 7)) displayUnit += 'V';
+  if (isBitSet(bytes[10]!, 2)) displayUnit += 'F';
+  if (isBitSet(bytes[9]!, 1)) displayUnit += '%';
+  if (isBitSet(bytes[10]!, 5)) displayUnit += 'Ω';
+  if (isBitSet(bytes[10]!, 3)) displayUnit += 'Hz';
+  if (isBitSet(bytes[10]!, 6)) displayUnit += 'A';
 
   const numeric = !overload && NUMERIC.test(displayText);
   const displayValue = numeric ? Number(displayText) : null;
@@ -209,7 +209,7 @@ export function looksLikeOwonOldFrame(bytes: Uint8Array): boolean {
   const isOL = bytes[1] === 0x3f && bytes[4] === 0x3f;
   if (!isOL) {
     for (let i = 1; i <= 4; i++) {
-      if (bytes[i] < 0x30 || bytes[i] > 0x39) return false; // not an ASCII digit
+      if (bytes[i]! < 0x30 || bytes[i]! > 0x39) return false; // not an ASCII digit
     }
   }
   return true;
@@ -222,7 +222,7 @@ class OwonOldFramer implements DriverFramer {
   private buf: number[] = [];
 
   push(chunk: Uint8Array): ParsedFrame[] {
-    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]);
+    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]!);
     const out: ParsedFrame[] = [];
     for (;;) {
       this.sync();
@@ -266,7 +266,7 @@ export const owonOld: Driver = {
 
   // Returns true on the shared 0xFFF0 service (collision resolved by the orchestrator) or a
   // known name prefix.
-  match: (ctx) =>
+  match: ctx =>
     (ctx.services?.includes(FFF0_SERVICE) ?? false) ||
     (ctx.name?.startsWith('BDM') ?? false) ||
     (ctx.name?.startsWith('OWON') ?? false) ||

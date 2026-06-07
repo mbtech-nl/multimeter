@@ -18,14 +18,14 @@ export function decode(bytes: Uint8Array, ts = 0): Reading {
     return blank(ts);
   }
 
-  const fnIndex = bytes[3] & 0x7f; // bit7 is unused on the UT60BT; mask it off
+  const fnIndex = bytes[3]! & 0x7f; // bit7 is unused on the UT60BT; mask it off
   const fnName = FUNCTIONS[fnIndex] ?? `#${fnIndex}`;
-  const rangeIndex = bytes[4] - 0x30;
+  const rangeIndex = bytes[4]! - 0x30;
 
   const displayText = ascii.decode(bytes.subarray(5, 12)).trim();
 
   const ranges = RANGE_UNITS[fnName];
-  const displayUnit = ranges ? (ranges[rangeIndex] ?? ranges[0]) : '?';
+  const displayUnit = ranges ? (ranges[rangeIndex] ?? ranges[0] ?? '?') : '?';
   const { base: baseUnit, exp } = unitInfo(displayUnit);
 
   const overload = OVERLOAD.test(displayText.replace('.', ''));
@@ -36,9 +36,9 @@ export function decode(bytes: Uint8Array, ts = 0): Reading {
   }
   const baseValue = displayValue === null ? null : displayValue * 10 ** exp;
 
-  const a = bytes[14];
-  const b = bytes[15];
-  const c = bytes[16];
+  const a = bytes[14]!;
+  const b = bytes[15]!;
+  const c = bytes[16]!;
 
   return {
     ts,
@@ -50,7 +50,7 @@ export function decode(bytes: Uint8Array, ts = 0): Reading {
     baseUnit,
     overload,
     acdc: ACDC_FUNCTIONS.has(fnName) ? (c & 0x08 ? 'AC' : 'DC') : '',
-    bargraph: bytes[12] * 10 + bytes[13],
+    bargraph: bytes[12]! * 10 + bytes[13]!,
     flags: {
       max: !!(a & 0x08),
       min: !!(a & 0x04),

@@ -26,9 +26,9 @@ export function ChartColorPicker({
   }, [open]);
 
   return (
-    <div ref={ref} className="relative" onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}>
+    <div ref={ref} className="relative" onKeyDown={e => e.key === 'Escape' && setOpen(false)}>
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpen(o => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Chart line color"
@@ -46,7 +46,7 @@ export function ChartColorPicker({
           aria-label="Chart color"
           className="absolute right-0 z-50 mt-1 flex gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950 p-2 shadow-xl"
         >
-          {CHART_COLORS.map((c) => {
+          {CHART_COLORS.map(c => {
             const selected = c.key === value;
             return (
               <button

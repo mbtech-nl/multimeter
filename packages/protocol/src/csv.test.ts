@@ -53,7 +53,7 @@ describe('toCsv', () => {
         flags: { ...noFlags, hold: true },
       }),
     ]);
-    const row = csv.split('\r\n')[1];
+    const row = csv.split('\r\n')[1]!;
     // …displayValue(empty), displayUnit, baseValue(empty)…
     expect(row).toContain(',,V,,'); // displayValue + baseValue blank
     // …acdc,overload,hold,rel,max,min,auto → DC,1,1,0,0,0,0
@@ -70,7 +70,7 @@ describe('toCsv', () => {
     const segs = csv
       .split('\r\n')
       .slice(1)
-      .map((r) => r.split(',')[1]);
+      .map(r => r.split(',')[1]);
     expect(segs).toEqual(['0', '0', '1', '2']);
   });
 

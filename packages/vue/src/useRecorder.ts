@@ -16,7 +16,7 @@ export function useRecorder(reading: MaybeRefOrGetter<Reading | null>) {
 
   watch(
     () => toValue(reading),
-    (r) => rec.push(r),
+    r => rec.push(r),
     { immediate: true, flush: 'sync' },
   );
 

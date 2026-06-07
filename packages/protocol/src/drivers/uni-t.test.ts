@@ -37,7 +37,7 @@ describe('uni-t driver wiring', () => {
     const framer = uniT.createFramer();
     const out = framer.push(frame);
     expect(out).toHaveLength(1);
-    expect(out[0].kind).toBe('measurement');
+    expect(out[0]!.kind).toBe('measurement');
   });
 
   it('decode delegates to the shared decode() and yields the expected reading', () => {
@@ -69,8 +69,8 @@ describe('uni-t handshake', () => {
     await uniT.handshake(io);
 
     expect(write).toHaveBeenCalledTimes(2);
-    expect(write.mock.calls[0][0]).toBe(COMMANDS.GET_NAME);
-    expect(write.mock.calls[1][0]).toBe(COMMANDS.GET_DATA);
+    expect(write.mock.calls[0]![0]).toBe(COMMANDS.GET_NAME);
+    expect(write.mock.calls[1]![0]).toBe(COMMANDS.GET_DATA);
     // The control wait then exactly one measurement wait (returned true → loop exits).
     expect(waitForFrame).toHaveBeenCalledTimes(2);
   });
@@ -89,7 +89,7 @@ describe('uni-t handshake', () => {
 
     // 1 GET_NAME + 3 GET_DATA writes.
     expect(write).toHaveBeenCalledTimes(4);
-    expect(write.mock.calls[0][0]).toBe(COMMANDS.GET_NAME);
+    expect(write.mock.calls[0]![0]).toBe(COMMANDS.GET_NAME);
     for (const call of write.mock.calls.slice(1)) {
       expect(call[0]).toBe(COMMANDS.GET_DATA);
     }
@@ -128,7 +128,7 @@ describe('uni-t onRequest', () => {
     const io: DriverIO = { write, waitForFrame: vi.fn() };
     uniT.onRequest(frame('type-request'), io);
     expect(write).toHaveBeenCalledTimes(1);
-    expect(write.mock.calls[0][0]).toBe(COMMANDS.GET_NAME);
+    expect(write.mock.calls[0]![0]).toBe(COMMANDS.GET_NAME);
   });
 
   it('re-sends GET_DATA on a data-request', () => {
@@ -136,7 +136,7 @@ describe('uni-t onRequest', () => {
     const io: DriverIO = { write, waitForFrame: vi.fn() };
     uniT.onRequest(frame('data-request'), io);
     expect(write).toHaveBeenCalledTimes(1);
-    expect(write.mock.calls[0][0]).toBe(COMMANDS.GET_DATA);
+    expect(write.mock.calls[0]![0]).toBe(COMMANDS.GET_DATA);
   });
 
   it('does nothing for a measurement or control frame', () => {

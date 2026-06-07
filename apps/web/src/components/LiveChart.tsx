@@ -32,7 +32,7 @@ interface Props {
   truncated?: boolean;
   height?: number;
   dark?: boolean;
-  strokeColor?: string;
+  strokeColor?: string | undefined;
 }
 
 // uPlot paints to a canvas, so its colors are JS, not Tailwind classes — they can't ride
@@ -50,14 +50,14 @@ const colors = (dark: boolean, stroke?: string) => {
 // Push the current data into a plot instance, honoring the visible-window choice.
 function draw(u: uPlot, samples: Sample[], windowMs: number | null) {
   const pts = decimate(samples, MAX_POINTS);
-  const xs = pts.map((s) => s.t / 1000);
-  const ys = pts.map((s) => s.v);
+  const xs = pts.map(s => s.t / 1000);
+  const ys = pts.map(s => s.v);
   const data: AlignedData = [xs, ys];
   if (windowMs == null || xs.length === 0) {
     u.setData(data); // fit all (autoscale x + y)
   } else {
     u.setData(data, false);
-    const max = xs[xs.length - 1];
+    const max = xs[xs.length - 1]!;
     u.setScale('x', { min: max - windowMs / 1000, max });
   }
 }
@@ -125,7 +125,7 @@ export const LiveChart = forwardRef<LiveChartHandle, Props>(function LiveChart(
 
   useImperativeHandle(ref, () => ({
     toPng: () =>
-      new Promise<Blob | null>((resolve) => {
+      new Promise<Blob | null>(resolve => {
         const u = plotRef.current;
         if (!u) return resolve(null);
         // uPlot draws everything to one canvas; composite it over the page bg so the PNG
@@ -138,7 +138,7 @@ export const LiveChart = forwardRef<LiveChartHandle, Props>(function LiveChart(
         ctx.fillStyle = colors(dark).bg;
         ctx.fillRect(0, 0, out.width, out.height);
         ctx.drawImage(src, 0, 0);
-        out.toBlob((b) => resolve(b), 'image/png');
+        out.toBlob(b => resolve(b), 'image/png');
       }),
   }));
 
@@ -159,7 +159,7 @@ export const LiveChart = forwardRef<LiveChartHandle, Props>(function LiveChart(
           )}
         </div>
         <div className="flex gap-1" role="group" aria-label="Chart time window">
-          {WINDOWS.map((w) => (
+          {WINDOWS.map(w => (
             <button
               key={w.label}
               onClick={() => setWindowMs(w.ms)}

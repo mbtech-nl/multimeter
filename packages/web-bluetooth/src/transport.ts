@@ -17,7 +17,7 @@ export interface TransportProfile {
   gatt: DriverGattProfile;
 }
 
-const registryProfiles = (): TransportProfile[] => drivers.map((d) => ({ id: d.id, gatt: d.gatt }));
+const registryProfiles = (): TransportProfile[] => drivers.map(d => ({ id: d.id, gatt: d.gatt }));
 
 export class Transport {
   onChunk?: (bytes: Uint8Array) => void;
@@ -25,8 +25,8 @@ export class Transport {
 
   private device?: BluetoothDevice;
   private server?: BluetoothRemoteGATTServer;
-  private notifyChar?: BluetoothRemoteGATTCharacteristic;
-  private writeChar?: BluetoothRemoteGATTCharacteristic;
+  private notifyChar: BluetoothRemoteGATTCharacteristic | undefined;
+  private writeChar: BluetoothRemoteGATTCharacteristic | undefined;
   private profile?: DriverGattProfile; // the matched driver's GATT profile (for reconnect)
   private matchedId?: string;
 
@@ -55,15 +55,15 @@ export class Transport {
     profiles: TransportProfile[] = registryProfiles(),
     namePrefixes: string[] = allNamePrefixes(),
   ): Promise<string> {
-    const services = [...new Set(profiles.map((p) => p.gatt.service))];
+    const services = [...new Set(profiles.map(p => p.gatt.service))];
     // Match by advertised name prefix OR by service UUID. The UT60BT advertises a name, but the
     // 0xFFF0 family (bdm/owon/voltcraft) advertises inconsistent or blank names — so a service
     // filter is what makes those discoverable (PLAN §6 "device-type selection"). A device shows
     // in the chooser if it matches ANY filter.
     const device = await navigator.bluetooth.requestDevice({
       filters: [
-        ...namePrefixes.map((namePrefix) => ({ namePrefix })),
-        ...services.map((service) => ({ services: [service] })),
+        ...namePrefixes.map(namePrefix => ({ namePrefix })),
+        ...services.map(service => ({ services: [service] })),
       ],
       optionalServices: [...services, DEVICE_INFO_SERVICE],
     });
@@ -129,10 +129,10 @@ export class Transport {
     // Prefer the profile's UUIDs; fall back to characteristic properties so a firmware
     // reshuffle doesn't strand us.
     this.notifyChar =
-      chars.find((c) => c.uuid === chosen.gatt.notify) ?? chars.find((c) => c.properties.notify);
+      chars.find(c => c.uuid === chosen.gatt.notify) ?? chars.find(c => c.properties.notify);
     this.writeChar =
-      chosen.gatt.write.map((u) => chars.find((c) => c.uuid === u)).find(Boolean) ??
-      chars.find((c) => c.properties.write || c.properties.writeWithoutResponse);
+      chosen.gatt.write.map(u => chars.find(c => c.uuid === u)).find(Boolean) ??
+      chars.find(c => c.properties.write || c.properties.writeWithoutResponse);
 
     if (!this.notifyChar || !this.writeChar) {
       throw new Error('notify/write characteristics not found on this device');

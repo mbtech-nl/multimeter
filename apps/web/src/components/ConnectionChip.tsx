@@ -107,9 +107,9 @@ export function DeviceMenu({ meter }: { meter: Meter }) {
   if (meter.state !== 'live') return null;
 
   return (
-    <div ref={ref} className="relative" onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}>
+    <div ref={ref} className="relative" onKeyDown={e => e.key === 'Escape' && setOpen(false)}>
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpen(o => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Device options"

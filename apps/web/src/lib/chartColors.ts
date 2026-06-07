@@ -25,6 +25,6 @@ export const DEFAULT_CHART_COLOR = 'emerald';
 // Resolve a preset key to the right hex for the active theme. Unknown keys fall back to the
 // default so a stale localStorage value can never blank the line.
 export function resolveStroke(key: string, dark: boolean): string {
-  const c = CHART_COLORS.find((x) => x.key === key) ?? CHART_COLORS[0];
+  const c = CHART_COLORS.find(x => x.key === key) ?? CHART_COLORS[0]!;
   return dark ? c.dark : c.light;
 }

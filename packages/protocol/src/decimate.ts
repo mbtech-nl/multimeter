@@ -26,7 +26,7 @@ export function decimate(samples: Sample[], maxPoints: number): Sample[] {
     let hi: Sample | null = null;
     let gap: Sample | null = null;
     for (let i = start; i < end; i++) {
-      const s = samples[i];
+      const s = samples[i]!;
       if (s.v === null) {
         gap ??= s;
         continue;
@@ -51,9 +51,9 @@ export function decimate(samples: Sample[], maxPoints: number): Sample[] {
   }
 
   // Pin exact endpoints so the curve starts/ends where the data does.
-  if (out.length === 0 || out[0].t !== samples[0].t) out.unshift(samples[0]);
-  const last = samples[n - 1];
-  if (out[out.length - 1].t !== last.t) out.push(last);
+  if (out.length === 0 || out[0]!.t !== samples[0]!.t) out.unshift(samples[0]!);
+  const last = samples[n - 1]!;
+  if (out[out.length - 1]!.t !== last.t) out.push(last);
 
   return out;
 }

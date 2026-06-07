@@ -16,7 +16,7 @@ function fmtNum(v: number): string {
 
 // Spread across the numeric captures, on baseValue so a range change mid-batch doesn't skew it.
 function matchSummary(readings: Reading[]): { range: number; pct: number; unit: string } | null {
-  const vals = readings.filter((r) => r.baseValue !== null).map((r) => r.baseValue as number);
+  const vals = readings.filter(r => r.baseValue !== null).map(r => r.baseValue as number);
   if (vals.length < 2) return null;
   const min = Math.min(...vals);
   const max = Math.max(...vals);
@@ -24,7 +24,7 @@ function matchSummary(readings: Reading[]): { range: number; pct: number; unit: 
   return {
     range: max - min,
     pct: mean !== 0 ? ((max - min) / Math.abs(mean)) * 100 : 0,
-    unit: readings.find((r) => r.baseValue !== null)!.baseUnit,
+    unit: readings.find(r => r.baseValue !== null)!.baseUnit,
   };
 }
 

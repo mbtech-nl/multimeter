@@ -9,7 +9,7 @@ const hex = (s: string) =>
     s
       .trim()
       .split(/\s+/)
-      .map((h) => parseInt(h, 16)),
+      .map(h => parseInt(h, 16)),
   );
 
 interface Fix {
@@ -270,13 +270,13 @@ const FIXTURES: Fix[] = [
 ];
 
 describe('checksum', () => {
-  it.each(FIXTURES)('$name passes its 16-bit checksum', (f) => {
+  it.each(FIXTURES)('$name passes its 16-bit checksum', f => {
     expect(checksumOk(hex(f.hex))).toBe(true);
   });
 });
 
 describe('decode', () => {
-  it.each(FIXTURES)('$name → value/unit/acdc/overload', (f) => {
+  it.each(FIXTURES)('$name → value/unit/acdc/overload', f => {
     const r = decode(hex(f.hex), 1000);
     expect(r.function).toBe(f.fn);
     expect(r.displayUnit).toBe(f.unit);
@@ -297,10 +297,10 @@ describe('decode', () => {
 describe('flags', () => {
   it('reads autorange-off (flags B bit2) as auto=false', () => {
     // ACV r1 has flags B = 0x04 (manual range)
-    const manual = decode(hex(FIXTURES[1].hex));
+    const manual = decode(hex(FIXTURES[1]!.hex));
     expect(manual.flags.auto).toBe(false);
     // ACV r0 has flags B = 0x00 (autoranging)
-    const auto = decode(hex(FIXTURES[0].hex));
+    const auto = decode(hex(FIXTURES[0]!.hex));
     expect(auto.flags.auto).toBe(true);
   });
 });

@@ -36,7 +36,7 @@ function reading(over: Partial<Reading> = {}): Reading {
   };
 }
 
-const flush = () => new Promise((r) => setTimeout(r, 0));
+const flush = () => new Promise(r => setTimeout(r, 0));
 
 describe('RecorderSession buffer + stats', () => {
   it('accumulates the live buffer and computes windowed stats', () => {
@@ -115,6 +115,6 @@ describe('RecorderSession recording', () => {
     rec.stop();
     await flush();
     const readings = await getReadings(id);
-    expect(readings.map((r) => r.ts)).toEqual([1, 3]);
+    expect(readings.map(r => r.ts)).toEqual([1, 3]);
   });
 });

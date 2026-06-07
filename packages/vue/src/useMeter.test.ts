@@ -18,7 +18,7 @@ function measurementFrame(): Uint8Array {
   f[4] = 0x30;
   '1.000  '.split('').forEach((ch, i) => (f[5 + i] = ch.charCodeAt(0)));
   let sum = 0;
-  for (let i = 0; i <= 16; i++) sum += f[i];
+  for (let i = 0; i <= 16; i++) sum += f[i]!;
   f[17] = (sum >> 8) & 0xff;
   f[18] = sum & 0xff;
   return f;

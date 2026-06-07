@@ -50,8 +50,8 @@ export function Modal({
     if (e.key !== 'Tab') return;
     const nodes = panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE);
     if (!nodes || nodes.length === 0) return;
-    const first = nodes[0];
-    const last = nodes[nodes.length - 1];
+    const first = nodes[0]!;
+    const last = nodes[nodes.length - 1]!;
     const active = document.activeElement;
     if (e.shiftKey && active === first) {
       e.preventDefault();
@@ -72,7 +72,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         onKeyDown={onKeyDown}
         className="w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-950 p-5 shadow-xl"
       >
@@ -173,7 +173,7 @@ export function PromptDialog({
   return (
     <Modal open={open} onClose={onClose} labelledBy="prompt-title" initialFocusRef={inputRef}>
       <form
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault();
           submit();
         }}
@@ -186,7 +186,7 @@ export function PromptDialog({
           <input
             ref={inputRef}
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={e => setValue(e.target.value)}
             className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-sm text-zinc-100 focus-visible:outline-2 focus-visible:outline-emerald-500"
           />
         </label>

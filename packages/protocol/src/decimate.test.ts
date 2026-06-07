@@ -27,20 +27,20 @@ describe('decimate', () => {
   it('keeps x (time) monotonically increasing', () => {
     const s = mk(Array.from({ length: 5000 }, (_, i) => Math.sin(i)));
     const out = decimate(s, 100);
-    for (let i = 1; i < out.length; i++) expect(out[i].t).toBeGreaterThan(out[i - 1].t);
+    for (let i = 1; i < out.length; i++) expect(out[i]!.t).toBeGreaterThan(out[i - 1]!.t);
   });
 
   it('preserves a transient spike that naive sampling would drop', () => {
     const vals = Array.from({ length: 2000 }, () => 1);
     vals[1234] = 999; // single-sample spike buried in flat data
     const out = decimate(mk(vals), 100);
-    expect(out.some((s) => s.v === 999)).toBe(true);
+    expect(out.some(s => s.v === 999)).toBe(true);
   });
 
   it('preserves a multi-sample gap (OL region)', () => {
     const vals: (number | null)[] = Array.from({ length: 2000 }, () => 5);
     for (let i = 800; i < 1000; i++) vals[i] = null; // sustained overload
     const out = decimate(mk(vals), 100);
-    expect(out.some((s) => s.v === null)).toBe(true);
+    expect(out.some(s => s.v === null)).toBe(true);
   });
 });

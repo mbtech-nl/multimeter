@@ -162,8 +162,8 @@ describe('ai-care framer (self-addressing sync + split/coalesced notifications)'
     const f = aiCare.createFramer();
     const out = f.push(Uint8Array.from(FRAME));
     expect(out).toHaveLength(1);
-    expect(out[0].kind).toBe('measurement');
-    expect([...out[0].bytes]).toEqual(FRAME);
+    expect(out[0]!.kind).toBe('measurement');
+    expect([...out[0]!.bytes]).toEqual(FRAME);
   });
 
   it('reassembles a frame split across two notifications', () => {
@@ -171,7 +171,7 @@ describe('ai-care framer (self-addressing sync + split/coalesced notifications)'
     expect(f.push(Uint8Array.from(FRAME.slice(0, 6)))).toHaveLength(0);
     const out = f.push(Uint8Array.from(FRAME.slice(6)));
     expect(out).toHaveLength(1);
-    expect([...out[0].bytes]).toEqual(FRAME);
+    expect([...out[0]!.bytes]).toEqual(FRAME);
   });
 
   it('splits two frames coalesced into one notification', () => {
@@ -185,7 +185,7 @@ describe('ai-care framer (self-addressing sync + split/coalesced notifications)'
     // 0x00, 0xFF, 0x20 (slot 2) are all non-slot-1 and must be dropped before the real frame.
     const out = f.push(Uint8Array.from([0x00, 0xff, 0x20, ...FRAME]));
     expect(out).toHaveLength(1);
-    expect([...out[0].bytes]).toEqual(FRAME);
+    expect([...out[0]!.bytes]).toEqual(FRAME);
   });
 
   it('reset clears buffered bytes', () => {
@@ -205,7 +205,7 @@ function encodeAiCare(onBits: number[]): Uint8Array {
   const bytes = new Uint8Array(14);
   for (let slot = 0; slot < 14; slot++) {
     let nibble = 0;
-    for (let b = 0; b < 4; b++) nibble = (nibble << 1) | bits[slot * 4 + b];
+    for (let b = 0; b < 4; b++) nibble = (nibble << 1) | bits[slot * 4 + b]!;
     bytes[slot] = ((slot + 1) << 4) | nibble;
   }
   return bytes;

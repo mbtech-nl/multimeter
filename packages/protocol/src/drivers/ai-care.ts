@@ -45,9 +45,9 @@ const SEG: Record<string, string> = {
 function descramble(bytes: Uint8Array): string {
   const slots = new Array<string>(FRAME_LEN).fill('0000');
   for (let i = 0; i < FRAME_LEN; i++) {
-    const slot = ((bytes[i] & 0xf0) >> 4) - 1;
+    const slot = ((bytes[i]! & 0xf0) >> 4) - 1;
     if (slot >= 0 && slot < FRAME_LEN) {
-      slots[slot] = (bytes[i] & 0x0f).toString(2).padStart(4, '0');
+      slots[slot] = (bytes[i]! & 0x0f).toString(2).padStart(4, '0');
     }
   }
   return slots.join('');
@@ -195,7 +195,7 @@ class AiCareFramer implements DriverFramer {
   private buf: number[] = [];
 
   push(chunk: Uint8Array): ParsedFrame[] {
-    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]);
+    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]!);
     const out: ParsedFrame[] = [];
     for (;;) {
       this.sync();
@@ -212,7 +212,7 @@ class AiCareFramer implements DriverFramer {
 
   // Drop bytes until the head is a slot-1 byte (high nibble 0x1 = frame start).
   private sync(): void {
-    while (this.buf.length >= 1 && (this.buf[0] & 0xf0) >> 4 !== 1) {
+    while (this.buf.length >= 1 && (this.buf[0]! & 0xf0) >> 4 !== 1) {
       this.buf.shift();
     }
   }
@@ -231,7 +231,7 @@ export const aiCare: Driver = {
   namePrefixes: ['AICARE', 'AI-Care'],
   gatt: { service: FFB0_SERVICE, notify: FFB2_NOTIFY, write: [FFB1_WRITE] },
 
-  match: (ctx) =>
+  match: ctx =>
     (ctx.services?.includes(FFB0_SERVICE) ?? false) ||
     (ctx.name?.toUpperCase().startsWith('AICARE') ?? false),
 

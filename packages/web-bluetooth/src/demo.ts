@@ -25,7 +25,7 @@ export function demoVolts(tSec: number): number {
 export function demoReading(tSec: number, ts: number): Reading {
   const fn = 'DCV';
   const value = demoVolts(tSec);
-  const displayUnit = RANGE_UNITS[fn][0]; // 'V'
+  const displayUnit = RANGE_UNITS[fn]![0]!; // 'V'
   const { base: baseUnit, exp } = unitInfo(displayUnit);
   return {
     ts,

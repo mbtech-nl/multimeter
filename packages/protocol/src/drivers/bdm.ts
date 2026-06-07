@@ -52,7 +52,7 @@ const SEG: Record<string, string> = {
 function descramble(bytes: Uint8Array): string {
   let bits = '';
   for (let i = 0; i < FRAME_LEN; i++) {
-    bits += ((bytes[i] ^ DATASHIFT[i]) & 0xff).toString(2).padStart(8, '0');
+    bits += ((bytes[i]! ^ DATASHIFT[i]!) & 0xff).toString(2).padStart(8, '0');
   }
   return bits;
 }
@@ -200,7 +200,7 @@ class BdmFramer implements DriverFramer {
   private buf: number[] = [];
 
   push(chunk: Uint8Array): ParsedFrame[] {
-    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]);
+    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]!);
     const out: ParsedFrame[] = [];
     for (;;) {
       this.sync();
@@ -252,7 +252,7 @@ export const bdm: Driver = {
   namePrefixes: ['BDM'],
   gatt: { service: FFF0_SERVICE, notify: FFF4_NOTIFY, write: [FFF3_WRITE] },
 
-  match: (ctx) =>
+  match: ctx =>
     (ctx.services?.includes(FFF0_SERVICE) ?? false) || (ctx.name?.startsWith('BDM') ?? false),
 
   createFramer: () => new BdmFramer(),

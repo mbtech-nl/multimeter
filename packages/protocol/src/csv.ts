@@ -41,7 +41,7 @@ export function toCsv(readings: Reading[]): string {
     lines.push(
       [
         cell(new Date(r.ts).toISOString()),
-        cell(segs[i]),
+        cell(segs[i]!),
         cell(r.function),
         cell(r.displayValue),
         cell(r.displayUnit),

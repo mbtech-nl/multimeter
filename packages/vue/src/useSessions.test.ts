@@ -21,7 +21,7 @@ function makeSession(over: Partial<Session> = {}): Session {
 // (not just microtasks) before letting Vue's reactivity flush the computed refs.
 async function flush(check: () => boolean): Promise<void> {
   for (let i = 0; i < 50 && !check(); i++) {
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise(r => setTimeout(r, 0));
     await nextTick();
   }
 }

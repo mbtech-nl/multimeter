@@ -24,7 +24,7 @@ export interface ParsedFrame {
 export function checksumOk(frame: Uint8Array): boolean {
   if (frame.length !== 19) return false;
   let sum = 0;
-  for (let i = 0; i <= 16; i++) sum += frame[i];
+  for (let i = 0; i <= 16; i++) sum += frame[i]!;
   return ((sum >> 8) & 0xff) === frame[17] && (sum & 0xff) === frame[18];
 }
 
@@ -40,14 +40,14 @@ export class FrameParser {
 
   /** Feed a raw notification chunk; returns every complete frame it completes. */
   push(chunk: Uint8Array): ParsedFrame[] {
-    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]);
+    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]!);
 
     const out: ParsedFrame[] = [];
     for (;;) {
       this.sync();
       if (this.buf.length < 3) break; // need at least AB CD <len>
 
-      const total = this.buf[2] + 3; // <len> counts the bytes after it
+      const total = this.buf[2]! + 3; // <len> counts the bytes after it
       if (total < 4 || total > 64) {
         // Bogus length — almost certainly a false AB CD inside noise. Drop one byte
         // and resync rather than waiting forever for a frame that won't come.

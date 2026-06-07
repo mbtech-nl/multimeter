@@ -43,7 +43,7 @@ export function SessionsList({ sessions }: { sessions: Sessions }) {
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {list.map((s) => (
+          {list.map(s => (
             <li
               key={s.id}
               className="flex flex-wrap items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2"
@@ -52,7 +52,7 @@ export function SessionsList({ sessions }: { sessions: Sessions }) {
                 <div className="truncate text-sm font-semibold text-zinc-100">{s.name}</div>
                 <div className="text-xs text-zinc-500">
                   {fmtTime(s.startedAt)} · {s.sampleCount} samples ·{' '}
-                  {s.segments.map((g) => g.function).join(' → ') || '—'}
+                  {s.segments.map(g => g.function).join(' → ') || '—'}
                   {s.endedAt === null && <span className="ml-1 text-amber-500">· unfinished</span>}
                 </div>
               </div>
@@ -75,7 +75,7 @@ export function SessionsList({ sessions }: { sessions: Sessions }) {
         label="Name"
         initialValue={renaming?.name ?? ''}
         confirmLabel="Rename"
-        onSubmit={(name) => renaming && rename(renaming.id, name)}
+        onSubmit={name => renaming && rename(renaming.id, name)}
         onClose={() => setRenaming(null)}
       />
       <ConfirmDialog
@@ -115,9 +115,9 @@ export function SessionViewer({
   useEffect(() => setSegIdx(0), [id]); // reset to first segment when switching sessions
   const seg = segments[segIdx];
 
-  const stats = useMemo(() => computeStats(seg ? seg.samples.map((s) => s.v) : []), [seg]);
+  const stats = useMemo(() => computeStats(seg ? seg.samples.map(s => s.v) : []), [seg]);
   const durationMs =
-    seg && seg.samples.length > 1 ? seg.samples[seg.samples.length - 1].t - seg.samples[0].t : 0;
+    seg && seg.samples.length > 1 ? seg.samples[seg.samples.length - 1]!.t - seg.samples[0]!.t : 0;
 
   if (!ready) {
     return (

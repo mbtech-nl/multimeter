@@ -32,13 +32,13 @@ import { exportCsv, exportPng } from './lib/exporters';
 // lean: uPlot only loads once there's something to chart. LiveChart loads on connect; the whole
 // Recordings view loads when its tab is first opened. Both are named exports → unwrap to default.
 const LiveChart = lazy(() =>
-  import('./components/LiveChart').then((m) => ({ default: m.LiveChart })),
+  import('./components/LiveChart').then(m => ({ default: m.LiveChart })),
 );
 const SessionsList = lazy(() =>
-  import('./components/SessionsList').then((m) => ({ default: m.SessionsList })),
+  import('./components/SessionsList').then(m => ({ default: m.SessionsList })),
 );
 const SessionViewer = lazy(() =>
-  import('./components/SessionsList').then((m) => ({ default: m.SessionViewer })),
+  import('./components/SessionsList').then(m => ({ default: m.SessionViewer })),
 );
 
 export default function App() {
@@ -85,7 +85,7 @@ export default function App() {
     }
   }, [location]);
 
-  const toggleHold = () => setHeld((h) => (h ? null : meter.reading));
+  const toggleHold = () => setHeld(h => (h ? null : meter.reading));
   const pinReading = () => {
     if (displayReading) pinSession.pin(displayReading);
   };
@@ -112,7 +112,7 @@ export default function App() {
 
     switch (e.key) {
       case '?':
-        setHelpOpen((h) => !h);
+        setHelpOpen(h => !h);
         break;
       case 'Escape':
         setHelpOpen(false);

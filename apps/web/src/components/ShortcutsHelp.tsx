@@ -56,7 +56,7 @@ export function ShortcutsHelp({ open, onClose }: { open: boolean; onClose: () =>
         role="dialog"
         aria-modal="true"
         aria-labelledby="shortcuts-title"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         onKeyDown={onKeyDown}
         className="w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-950 p-5 shadow-xl"
       >
@@ -74,7 +74,7 @@ export function ShortcutsHelp({ open, onClose }: { open: boolean; onClose: () =>
           </button>
         </div>
         <dl className="flex flex-col gap-1.5">
-          {SHORTCUTS.map((s) => (
+          {SHORTCUTS.map(s => (
             <div key={s.keys} className="flex items-center justify-between gap-4">
               <dt className="text-sm text-zinc-300">{s.label}</dt>
               <dd>

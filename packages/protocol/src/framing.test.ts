@@ -8,7 +8,7 @@ const hex = (s: string) =>
     s
       .trim()
       .split(/\s+/)
-      .map((h) => parseInt(h, 16)),
+      .map(h => parseInt(h, 16)),
   );
 
 const DCV = hex('ab cd 10 02 30 20 2d 31 2e 33 32 35 00 00 00 00 00 03 00'); // 19 bytes
@@ -20,15 +20,15 @@ describe('FrameParser', () => {
     const p = new FrameParser();
     const out = p.push(DCV);
     expect(out).toHaveLength(1);
-    expect(out[0].kind).toBe('measurement');
-    expect(out[0].bytes).toEqual(DCV);
+    expect(out[0]!.kind).toBe('measurement');
+    expect(out[0]!.bytes).toEqual(DCV);
   });
 
   it('coalesced: two frames in a single chunk', () => {
     const p = new FrameParser();
     const out = p.push(concat(DCV, HZ));
-    expect(out.map((f) => f.kind)).toEqual(['measurement', 'measurement']);
-    expect(out[1].bytes).toEqual(HZ);
+    expect(out.map(f => f.kind)).toEqual(['measurement', 'measurement']);
+    expect(out[1]!.bytes).toEqual(HZ);
   });
 
   it('split: a frame delivered one byte at a time', () => {
@@ -45,14 +45,14 @@ describe('FrameParser', () => {
     expect(p.push(DCV.subarray(0, 9))).toHaveLength(0);
     const out = p.push(DCV.subarray(9));
     expect(out).toHaveLength(1);
-    expect(out[0].bytes).toEqual(DCV);
+    expect(out[0]!.bytes).toEqual(DCV);
   });
 
   it('classifies an 11-byte name frame as control, not measurement', () => {
     const p = new FrameParser();
     const out = p.push(NAME);
     expect(out).toHaveLength(1);
-    expect(out[0].kind).toBe('control');
+    expect(out[0]!.kind).toBe('control');
   });
 
   it('resyncs past leading garbage', () => {
@@ -60,17 +60,17 @@ describe('FrameParser', () => {
     const out = p.push(concat(hex('00 11 22 ab'), DCV.subarray(1)));
     // garbage + a stray AB then the real frame minus its AB — parser should find the
     // real AB CD boundary and recover one frame.
-    expect(out.map((f) => f.kind)).toEqual(['measurement']);
+    expect(out.map(f => f.kind)).toEqual(['measurement']);
   });
 
   it('rejects a corrupted frame (bad checksum) and recovers on the next good one', () => {
     const p = new FrameParser();
     const bad = DCV.slice();
-    bad[7] ^= 0xff; // flip a payload byte → checksum fails
+    bad[7]! ^= 0xff; // flip a payload byte → checksum fails
     expect(checksumOk(bad)).toBe(false);
     // The corrupted 19 bytes get resynced byte-by-byte; the following good frame parses.
     const out = p.push(concat(bad, HZ));
-    expect(out.some((f) => f.bytes.length === 19 && checksumOk(f.bytes))).toBe(true);
+    expect(out.some(f => f.bytes.length === 19 && checksumOk(f.bytes))).toBe(true);
     expect(out.at(-1)!.bytes).toEqual(HZ);
   });
 

@@ -56,10 +56,10 @@ describe('storage', () => {
     await appendSamples('s1', 2, [reading(3, 30)]); // second batch continues the seq
 
     const readings = await getReadings('s1');
-    expect(readings.map((r) => r.baseValue)).toEqual([10, 20, 30]);
+    expect(readings.map(r => r.baseValue)).toEqual([10, 20, 30]);
 
     const list = await listSessions();
-    expect(list.find((s) => s.id === 's1')).toBeDefined();
+    expect(list.find(s => s.id === 's1')).toBeDefined();
   });
 
   it("keeps each session's samples isolated", async () => {
@@ -68,8 +68,8 @@ describe('storage', () => {
     await appendSamples('a', 0, [reading(1, 1)]);
     await appendSamples('b', 0, [reading(1, 99), reading(2, 98)]);
 
-    expect((await getReadings('a')).map((r) => r.baseValue)).toEqual([1]);
-    expect((await getReadings('b')).map((r) => r.baseValue)).toEqual([99, 98]);
+    expect((await getReadings('a')).map(r => r.baseValue)).toEqual([1]);
+    expect((await getReadings('b')).map(r => r.baseValue)).toEqual([99, 98]);
   });
 
   it('updates session metadata (finish) in place', async () => {
@@ -99,7 +99,7 @@ describe('storage', () => {
   it('lists sessions newest-first', async () => {
     await createSession({ ...session('old'), startedAt: 100 });
     await createSession({ ...session('new'), startedAt: 9999 });
-    const ids = (await listSessions()).map((s) => s.id);
+    const ids = (await listSessions()).map(s => s.id);
     expect(ids.indexOf('new')).toBeLessThan(ids.indexOf('old'));
   });
 });

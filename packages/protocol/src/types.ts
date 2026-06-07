@@ -167,8 +167,8 @@ export interface UnitInfo {
 // when there's a base behind it, so a bare "V"/"Ω"/"%"/"" stays put.
 export function unitInfo(display: string): UnitInfo {
   const head = display[0];
-  if (display.length > 1 && head in PREFIX) {
-    return { display, base: display.slice(1), exp: PREFIX[head] };
+  if (display.length > 1 && head !== undefined && head in PREFIX) {
+    return { display, base: display.slice(1), exp: PREFIX[head]! };
   }
   return { display, base: display, exp: 0 };
 }

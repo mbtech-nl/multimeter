@@ -9,11 +9,11 @@ describe('resolveStroke', () => {
   });
 
   it('falls back to the first preset for an unknown key', () => {
-    expect(resolveStroke('does-not-exist', true)).toBe(CHART_COLORS[0].dark);
-    expect(resolveStroke('does-not-exist', false)).toBe(CHART_COLORS[0].light);
+    expect(resolveStroke('does-not-exist', true)).toBe(CHART_COLORS[0]!.dark);
+    expect(resolveStroke('does-not-exist', false)).toBe(CHART_COLORS[0]!.light);
   });
 
   it('the default key is one of the presets', () => {
-    expect(CHART_COLORS.some((c) => c.key === DEFAULT_CHART_COLOR)).toBe(true);
+    expect(CHART_COLORS.some(c => c.key === DEFAULT_CHART_COLOR)).toBe(true);
   });
 });

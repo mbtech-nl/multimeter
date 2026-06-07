@@ -245,8 +245,8 @@ describe('voltcraft framer (sync + split/coalesced notifications)', () => {
     const f = voltcraft.createFramer();
     const out = f.push(Uint8Array.from(FRAME));
     expect(out).toHaveLength(1);
-    expect(out[0].kind).toBe('measurement');
-    expect([...out[0].bytes]).toEqual(FRAME);
+    expect(out[0]!.kind).toBe('measurement');
+    expect([...out[0]!.bytes]).toEqual(FRAME);
   });
 
   it('reassembles a frame split across two notifications', () => {
@@ -254,7 +254,7 @@ describe('voltcraft framer (sync + split/coalesced notifications)', () => {
     expect(f.push(Uint8Array.from(FRAME.slice(0, 6)))).toHaveLength(0);
     const out = f.push(Uint8Array.from(FRAME.slice(6)));
     expect(out).toHaveLength(1);
-    expect([...out[0].bytes]).toEqual(FRAME);
+    expect([...out[0]!.bytes]).toEqual(FRAME);
   });
 
   it('splits two frames coalesced into one notification', () => {
@@ -267,7 +267,7 @@ describe('voltcraft framer (sync + split/coalesced notifications)', () => {
     const f = voltcraft.createFramer();
     const out = f.push(Uint8Array.from([0x00, 0xff, ...FRAME]));
     expect(out).toHaveLength(1);
-    expect([...out[0].bytes]).toEqual(FRAME);
+    expect([...out[0]!.bytes]).toEqual(FRAME);
   });
 
   it('reset clears buffered bytes', () => {

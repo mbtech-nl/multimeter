@@ -46,8 +46,8 @@ const session = (id: string, name = 'test', startedAt = 1000): Session => ({
 // Two ticks: the store's mutators chain several awaits (openDb -> request -> set) before the
 // snapshot settles, and the shared fake-indexeddb can need an extra macrotask under load.
 const flush = async () => {
-  await new Promise((r) => setTimeout(r, 0));
-  await new Promise((r) => setTimeout(r, 0));
+  await new Promise(r => setTimeout(r, 0));
+  await new Promise(r => setTimeout(r, 0));
 };
 
 describe('SessionsStore', () => {
@@ -67,7 +67,7 @@ describe('SessionsStore', () => {
     store.refresh();
     await flush();
 
-    const ids = store.getSnapshot().list.map((s) => s.id);
+    const ids = store.getSnapshot().list.map(s => s.id);
     expect(ids).toContain('list-old');
     expect(ids).toContain('list-new');
     expect(ids.indexOf('list-new')).toBeLessThan(ids.indexOf('list-old'));
@@ -88,7 +88,7 @@ describe('SessionsStore', () => {
     const opened = store.getSnapshot().opened;
     expect(opened?.session.id).toBe('open-1');
     expect(opened?.session.name).toBe('opened');
-    expect(opened?.readings.map((r) => r.baseValue)).toEqual([10, 20]);
+    expect(opened?.readings.map(r => r.baseValue)).toEqual([10, 20]);
     expect(notified).toBe(1);
   });
 
@@ -130,7 +130,7 @@ describe('SessionsStore', () => {
 
     expect((await getSession('ren-1'))?.name).toBe('after');
     expect(store.getSnapshot().opened?.session.name).toBe('after');
-    expect(store.getSnapshot().list.find((s) => s.id === 'ren-1')?.name).toBe('after');
+    expect(store.getSnapshot().list.find(s => s.id === 'ren-1')?.name).toBe('after');
   });
 
   it('rename of a non-opened session still updates storage and refreshes the list', async () => {
@@ -144,7 +144,7 @@ describe('SessionsStore', () => {
 
     expect((await getSession('ren-2'))?.name).toBe('y');
     expect(store.getSnapshot().opened).toBeNull();
-    expect(store.getSnapshot().list.find((s) => s.id === 'ren-2')?.name).toBe('y');
+    expect(store.getSnapshot().list.find(s => s.id === 'ren-2')?.name).toBe('y');
   });
 
   it('remove deletes the session (and its samples) and drops it from the list', async () => {
@@ -154,12 +154,12 @@ describe('SessionsStore', () => {
     const store = new SessionsStore();
     store.refresh();
     await flush();
-    expect(store.getSnapshot().list.find((s) => s.id === 'del-1')).toBeDefined();
+    expect(store.getSnapshot().list.find(s => s.id === 'del-1')).toBeDefined();
 
     store.remove('del-1');
     await flush();
 
-    expect(store.getSnapshot().list.find((s) => s.id === 'del-1')).toBeUndefined();
+    expect(store.getSnapshot().list.find(s => s.id === 'del-1')).toBeUndefined();
     expect(await getSession('del-1')).toBeUndefined();
     expect(await getReadings('del-1')).toEqual([]);
   });
@@ -188,7 +188,7 @@ describe('SessionsStore', () => {
     await flush();
 
     expect(store.getSnapshot().opened?.session.id).toBe('keep-open');
-    expect(store.getSnapshot().list.find((s) => s.id === 'del-other')).toBeUndefined();
+    expect(store.getSnapshot().list.find(s => s.id === 'del-other')).toBeUndefined();
   });
 
   it('dispose stops notifying former subscribers', async () => {

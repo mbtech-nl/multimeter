@@ -64,14 +64,14 @@ describe('requestAndConnect', () => {
 
     const t = new Transport();
     const chunks: Uint8Array[] = [];
-    t.onChunk = (b) => chunks.push(b);
+    t.onChunk = b => chunks.push(b);
     await t.requestAndConnect();
 
     // Filters offer every driver's name prefix AND every driver's service UUID (so the
     // name-less 0xFFF0 family is still discoverable). A device matches if ANY filter matches.
-    const filters = requestDevice.mock.calls[0][0].filters as Array<Record<string, unknown>>;
+    const filters = requestDevice.mock.calls[0]![0].filters as Array<Record<string, unknown>>;
     expect(filters).toEqual(expect.arrayContaining([{ namePrefix: 'UT60BT' }]));
-    expect(filters.some((f) => Array.isArray(f.services))).toBe(true);
+    expect(filters.some(f => Array.isArray(f.services))).toBe(true);
     expect(t.deviceName).toBe('UT60BT_AB');
     expect(t.connected).toBe(true);
     expect(notify.startNotifications).toHaveBeenCalledTimes(1);
@@ -79,7 +79,7 @@ describe('requestAndConnect', () => {
     notify.value = new DataView(new Uint8Array([0xab, 0xcd, 1, 2, 3]).buffer);
     notify.dispatchEvent(new Event('characteristicvaluechanged'));
     expect(chunks).toHaveLength(1);
-    expect(Array.from(chunks[0])).toEqual([0xab, 0xcd, 1, 2, 3]);
+    expect(Array.from(chunks[0]!)).toEqual([0xab, 0xcd, 1, 2, 3]);
   });
 
   it('falls back to characteristic properties when the known UUIDs are absent', async () => {

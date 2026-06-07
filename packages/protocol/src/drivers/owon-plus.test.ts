@@ -252,8 +252,8 @@ describe('owon-plus framer (fixed 6-byte slicing + resync)', () => {
     const f = owonPlus.createFramer();
     const out = f.push(Uint8Array.from(FRAME));
     expect(out).toHaveLength(1);
-    expect(out[0].kind).toBe('measurement');
-    expect([...out[0].bytes]).toEqual(FRAME);
+    expect(out[0]!.kind).toBe('measurement');
+    expect([...out[0]!.bytes]).toEqual(FRAME);
   });
 
   it('reassembles a frame split across two notifications', () => {
@@ -261,7 +261,7 @@ describe('owon-plus framer (fixed 6-byte slicing + resync)', () => {
     expect(f.push(Uint8Array.from(FRAME.slice(0, 3)))).toHaveLength(0);
     const out = f.push(Uint8Array.from(FRAME.slice(3)));
     expect(out).toHaveLength(1);
-    expect([...out[0].bytes]).toEqual(FRAME);
+    expect([...out[0]!.bytes]).toEqual(FRAME);
   });
 
   it('splits two frames coalesced into one notification', () => {
@@ -276,7 +276,7 @@ describe('owon-plus framer (fixed 6-byte slicing + resync)', () => {
     expect(out1).toHaveLength(1);
     const out2 = f.push(Uint8Array.from(FRAME.slice(2)));
     expect(out2).toHaveLength(1);
-    expect([...out2[0].bytes]).toEqual(FRAME);
+    expect([...out2[0]!.bytes]).toEqual(FRAME);
   });
 
   it('reset clears buffered bytes', () => {

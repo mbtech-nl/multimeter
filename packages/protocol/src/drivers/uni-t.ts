@@ -20,7 +20,7 @@ export const uniT: Driver = {
   namePrefixes: ['UT60BT'],
   gatt: { service: ISSC_SERVICE, notify: ISSC_NOTIFY, write: [ISSC_WRITE, ISSC_WRITE_FALLBACK] },
 
-  match: (ctx) =>
+  match: ctx =>
     (ctx.services?.includes(ISSC_SERVICE) ?? false) || (ctx.name?.startsWith('UT60BT') ?? false),
 
   createFramer: () => new FrameParser(),
@@ -29,10 +29,10 @@ export const uniT: Driver = {
   // for the name (control) frame first, then keep nudging GET-DATA until measurements start.
   async handshake(io) {
     await io.write(COMMANDS.GET_NAME);
-    await io.waitForFrame((k) => k === 'control', 1500);
+    await io.waitForFrame(k => k === 'control', 1500);
     for (let attempt = 0; attempt < 5; attempt++) {
       await io.write(COMMANDS.GET_DATA);
-      if (await io.waitForFrame((k) => k === 'measurement', 700)) return;
+      if (await io.waitForFrame(k => k === 'measurement', 700)) return;
     }
     throw new Error('meter did not start streaming after handshake');
   },

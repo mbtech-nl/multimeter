@@ -35,7 +35,7 @@ export class SessionsStore {
   }
 
   refresh = (): void => {
-    void storage.listSessions().then((list) => this.set({ list }));
+    void storage.listSessions().then(list => this.set({ list }));
   };
 
   open = (id: string): void => {

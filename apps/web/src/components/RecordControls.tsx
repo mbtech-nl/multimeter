@@ -26,8 +26,8 @@ export function RecordControls({ recState, recCount, onRecord, onPause, onResume
         <>
           <input
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onRecord(name)}
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && onRecord(name)}
             placeholder="Session name…"
             aria-label="Session name"
             className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-500"

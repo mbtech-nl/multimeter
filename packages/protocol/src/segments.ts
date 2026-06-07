@@ -60,7 +60,7 @@ export function splitSegments(readings: Reading[]): ReadingSegment[] {
         samples: [],
       });
     }
-    out[out.length - 1].samples.push(toSample(r, seg));
+    out[out.length - 1]!.samples.push(toSample(r, seg));
   }
   return out;
 }

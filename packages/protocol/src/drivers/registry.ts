@@ -17,29 +17,29 @@ export const drivers: Driver[] = [uniT, bdm, owonPlus, owonOld, voltcraft, aiCar
 
 /** Every distinct GATT service UUID, for requestDevice `optionalServices`. */
 export function allServices(): string[] {
-  return [...new Set(drivers.map((d) => d.gatt.service))];
+  return [...new Set(drivers.map(d => d.gatt.service))];
 }
 
 /** Every distinct advertised-name prefix, for requestDevice `filters`. */
 export function allNamePrefixes(): string[] {
-  return [...new Set(drivers.flatMap((d) => d.namePrefixes))];
+  return [...new Set(drivers.flatMap(d => d.namePrefixes))];
 }
 
 /** Pick the driver for a freshly connected device (advertised service / name). */
 export function selectDriver(ctx: DriverMatchContext): Driver | undefined {
-  return drivers.find((d) => d.match(ctx));
+  return drivers.find(d => d.match(ctx));
 }
 
 export function driverById(id: string): Driver | undefined {
-  return drivers.find((d) => d.id === id);
+  return drivers.find(d => d.id === id);
 }
 
 /** All drivers exposing a given GATT service. >1 means the session must sniff to disambiguate. */
 export function driversForService(service: string): Driver[] {
-  return drivers.filter((d) => d.gatt.service === service);
+  return drivers.filter(d => d.gatt.service === service);
 }
 
 /** Pick the driver among `candidates` whose `sniff` accepts this raw frame (first match wins). */
 export function sniffDriver(candidates: Driver[], frame: Uint8Array): Driver | undefined {
-  return candidates.find((d) => d.sniff?.(frame) ?? false);
+  return candidates.find(d => d.sniff?.(frame) ?? false);
 }

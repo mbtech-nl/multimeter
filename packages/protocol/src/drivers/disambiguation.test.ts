@@ -20,12 +20,7 @@ describe('FFF0 driver disambiguation', () => {
   const candidates = driversForService(FFF0);
 
   it('all four FFF0 families are candidates on the shared service', () => {
-    expect(candidates.map((d) => d.id).sort()).toEqual([
-      'bdm',
-      'owon-old',
-      'owon-plus',
-      'voltcraft',
-    ]);
+    expect(candidates.map(d => d.id).sort()).toEqual(['bdm', 'owon-old', 'owon-plus', 'voltcraft']);
   });
 
   it('sniffDriver picks the correct family for each real frame', () => {
@@ -37,9 +32,9 @@ describe('FFF0 driver disambiguation', () => {
 
   it('every real frame is accepted by EXACTLY ONE driver (mutually exclusive sniffers)', () => {
     for (const [id, frame] of Object.entries(FRAMES)) {
-      const matches = candidates.filter((d) => d.sniff?.(Uint8Array.from(frame)));
+      const matches = candidates.filter(d => d.sniff?.(Uint8Array.from(frame)));
       expect(
-        matches.map((d) => d.id),
+        matches.map(d => d.id),
         `frame for ${id}`,
       ).toEqual([id]);
     }
@@ -60,7 +55,7 @@ describe('FFF0 driver disambiguation', () => {
   });
 
   it('the registry holds all six drivers', () => {
-    expect(drivers.map((d) => d.id).sort()).toEqual([
+    expect(drivers.map(d => d.id).sort()).toEqual([
       'ai-care',
       'bdm',
       'owon-old',

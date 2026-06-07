@@ -150,8 +150,8 @@ describe('splitSegments', () => {
     ];
     const out = splitSegments(rs);
     expect(out).toHaveLength(1);
-    expect(out[0].info).toEqual({ seg: 0, function: 'DCV', acdc: 'DC', unit: 'V' });
-    expect(out[0].samples).toEqual([
+    expect(out[0]!.info).toEqual({ seg: 0, function: 'DCV', acdc: 'DC', unit: 'V' });
+    expect(out[0]!.samples).toEqual([
       { t: 10, v: 1, seg: 0 },
       { t: 20, v: 2, seg: 0 },
     ]);
@@ -165,10 +165,10 @@ describe('splitSegments', () => {
     ];
     const out = splitSegments(rs);
     expect(out).toHaveLength(2);
-    expect(out[0].info).toEqual({ seg: 0, function: 'DCV', acdc: 'DC', unit: 'V' });
-    expect(out[0].samples).toEqual([{ t: 1, v: 5, seg: 0 }]);
-    expect(out[1].info).toEqual({ seg: 1, function: 'OHM', acdc: '', unit: 'Ω' });
-    expect(out[1].samples).toEqual([
+    expect(out[0]!.info).toEqual({ seg: 0, function: 'DCV', acdc: 'DC', unit: 'V' });
+    expect(out[0]!.samples).toEqual([{ t: 1, v: 5, seg: 0 }]);
+    expect(out[1]!.info).toEqual({ seg: 1, function: 'OHM', acdc: '', unit: 'Ω' });
+    expect(out[1]!.samples).toEqual([
       { t: 2, v: 100, seg: 1 },
       { t: 3, v: 200, seg: 1 },
     ]);
@@ -180,6 +180,6 @@ describe('splitSegments', () => {
     ];
     const out = splitSegments(rs);
     expect(out).toHaveLength(1);
-    expect(out[0].samples).toEqual([{ t: 1, v: null, seg: 0 }]);
+    expect(out[0]!.samples).toEqual([{ t: 1, v: null, seg: 0 }]);
   });
 });

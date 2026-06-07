@@ -16,7 +16,7 @@ function measurementFrame(): Uint8Array {
   f[4] = 0x30; // range '0'
   '1.000  '.split('').forEach((ch, i) => (f[5 + i] = ch.charCodeAt(0)));
   let sum = 0;
-  for (let i = 0; i <= 16; i++) sum += f[i];
+  for (let i = 0; i <= 16; i++) sum += f[i]!;
   f[17] = (sum >> 8) & 0xff;
   f[18] = sum & 0xff;
   return f;
@@ -230,7 +230,7 @@ describe('MeterSession — reconnect (PLAN §4)', () => {
     await vi.waitFor(() => expect(s.getSnapshot().state).toBe('live'));
 
     // Sanity: the first handshake issued GET-NAME and GET-DATA.
-    const cmdsOf = () => write.writeValueWithoutResponse.mock.calls.map((c) => c[0][3] as number);
+    const cmdsOf = () => write.writeValueWithoutResponse.mock.calls.map(c => c[0][3] as number);
     expect(cmdsOf()).toContain(GET_NAME);
     expect(cmdsOf()).toContain(GET_DATA);
     const writesBeforeDrop = write.writeValueWithoutResponse.mock.calls.length;
@@ -249,7 +249,7 @@ describe('MeterSession — reconnect (PLAN §4)', () => {
 
     // The full handshake re-ran: more writes happened, and GET-NAME + GET-DATA were re-issued.
     const newCalls = write.writeValueWithoutResponse.mock.calls.slice(writesBeforeDrop);
-    const newCmds = newCalls.map((c) => c[0][3] as number);
+    const newCmds = newCalls.map(c => c[0][3] as number);
     expect(newCmds).toContain(GET_NAME);
     expect(newCmds).toContain(GET_DATA);
   });
@@ -439,7 +439,7 @@ describe('MeterSession — toggleBacklight', () => {
     write.writeValueWithoutResponse.mockClear();
     s.toggleBacklight();
     await vi.waitFor(() =>
-      expect(write.writeValueWithoutResponse.mock.calls.map((c) => c[0][3] as number)).toContain(
+      expect(write.writeValueWithoutResponse.mock.calls.map(c => c[0][3] as number)).toContain(
         BACKLIGHT,
       ),
     );

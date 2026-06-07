@@ -96,7 +96,7 @@ const NUMERIC = /^-?\d*\.?\d+$/;
 // The function nibble decoded straight from the raw frame, with no length check. Shared by
 // decode and the frame sniffer.
 function functionOf(bytes: Uint8Array): number {
-  const symbols = (bytes[1] << 8) | bytes[0];
+  const symbols = (bytes[1]! << 8) | bytes[0]!;
   return (symbols >> 6) & 0x0f;
 }
 
@@ -107,7 +107,7 @@ function functionOf(bytes: Uint8Array): number {
 export function decodeOwonPlus(bytes: Uint8Array, ts = 0): Reading {
   if (bytes.length < FRAME_LEN) return blank(ts);
 
-  const symbols = (bytes[1] << 8) | bytes[0];
+  const symbols = (bytes[1]! << 8) | bytes[0]!;
   const fn = (symbols >> 6) & 0x0f;
   const scale = (symbols >> 3) & 0x07;
   const point = symbols & 0x07;
@@ -119,7 +119,7 @@ export function decodeOwonPlus(bytes: Uint8Array, ts = 0): Reading {
   // Ported faithfully, including the quirk that a "negative zero" (raw == 0x8000) renders as
   // "0000" with NO sign (because -1*0 == 0). The source also prepends "-" when data[0] == 45
   // (ASCII '-'); that branch effectively never fires for a real symbols low byte.
-  const raw = (bytes[5] << 8) | bytes[4];
+  const raw = (bytes[5]! << 8) | bytes[4]!;
   let displayText: string;
   if (point === 6) {
     displayText = 'U.L';
@@ -137,11 +137,11 @@ export function decodeOwonPlus(bytes: Uint8Array, ts = 0): Reading {
       point > 0
         ? `${tempData.slice(0, tempData.length - point)}.${tempData.slice(tempData.length - point)}`
         : tempData;
-    displayText = (bytes[0] === 45 ? '-' : '') + tempData;
+    displayText = (bytes[0]! === 45 ? '-' : '') + tempData;
   }
 
   // Unit symbol: SI prefix + base unit selected by the function code (source `MyGattCDataSymbol`).
-  let displayUnit = PREFIXES[scale];
+  let displayUnit: string = PREFIXES[scale]!;
   if (fn === 8) displayUnit += '°C';
   else if (fn === 9) displayUnit += '°F';
   else if (fn === 0 || fn === 1 || fn === 10) displayUnit += 'V';
@@ -160,7 +160,7 @@ export function decodeOwonPlus(bytes: Uint8Array, ts = 0): Reading {
   // So string index i corresponds to the numeric bit (15 - i) of the word — NOT the LSB-first
   // numbering in the inline `enum` comment (which is the original Android source's, and which the
   // dispatched C# does not follow). We mirror the C# string-index behaviour, which is authoritative.
-  const mode = ((bytes[3] << 8) | bytes[2]) & 0xffff;
+  const mode = ((bytes[3]! << 8) | bytes[2]!) & 0xffff;
   const strBit = (i: number): boolean => ((mode >> (15 - i)) & 1) === 1;
   const hold = strBit(0);
   const rel = strBit(1);
@@ -243,7 +243,7 @@ class OwonPlusFramer implements DriverFramer {
   private buf: number[] = [];
 
   push(chunk: Uint8Array): ParsedFrame[] {
-    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]);
+    for (let i = 0; i < chunk.length; i++) this.buf.push(chunk[i]!);
     const out: ParsedFrame[] = [];
     while (this.buf.length >= FRAME_LEN) {
       out.push({ kind: 'measurement', bytes: Uint8Array.from(this.buf.slice(0, FRAME_LEN)) });
@@ -273,7 +273,7 @@ export const owonPlus: Driver = {
 
   // FFF0 is shared; return true when the service (or a known name prefix) is present and let the
   // orchestrator resolve the collision using the frame sniffer.
-  match: (ctx) =>
+  match: ctx =>
     (ctx.services?.includes(FFF0_SERVICE) ?? false) ||
     (ctx.name?.startsWith('OWON') ?? false) ||
     (ctx.name?.startsWith('BDM') ?? false),

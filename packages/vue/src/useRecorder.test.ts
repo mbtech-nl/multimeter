@@ -87,7 +87,7 @@ describe('vue useRecorder', () => {
     expect(api.recState.value).toBe('idle');
     // stop() fires a final IndexedDB flush asynchronously; let it settle before tearing the
     // scope down so the deferred persistence completes inside the test boundary.
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise(r => setTimeout(r, 0));
     scope.stop();
   });
 

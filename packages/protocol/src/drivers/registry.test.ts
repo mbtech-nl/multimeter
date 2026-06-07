@@ -31,8 +31,8 @@ describe('allNamePrefixes', () => {
     const prefixes = allNamePrefixes();
     expect(new Set(prefixes).size).toBe(prefixes.length);
     // BDM is listed by bdm/owon-plus/owon-old; OWON by owon-plus/owon-old — each appears once.
-    expect(prefixes.filter((p) => p === 'BDM')).toHaveLength(1);
-    expect(prefixes.filter((p) => p === 'OWON')).toHaveLength(1);
+    expect(prefixes.filter(p => p === 'BDM')).toHaveLength(1);
+    expect(prefixes.filter(p => p === 'OWON')).toHaveLength(1);
     expect(prefixes).toContain('UT60BT');
   });
 });
@@ -115,7 +115,7 @@ describe('sniffDriver', () => {
 
 describe('drivers array', () => {
   it('registers the six known drivers in order', () => {
-    expect(drivers.map((d) => d.id)).toEqual([
+    expect(drivers.map(d => d.id)).toEqual([
       'uni-t',
       'bdm',
       'owon-plus',

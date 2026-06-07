@@ -83,9 +83,9 @@ export class RecorderSession {
   getSnapshot = (): RecorderSnapshot => this.snap;
 
   private build(): RecorderSnapshot {
-    const window = this.samples.filter((s) => s.t >= this.statsStartT);
-    const stats = computeStats(window.map((s) => s.v));
-    const statsDurationMs = window.length > 1 ? window[window.length - 1].t - window[0].t : 0;
+    const window = this.samples.filter(s => s.t >= this.statsStartT);
+    const stats = computeStats(window.map(s => s.v));
+    const statsDurationMs = window.length > 1 ? window[window.length - 1]!.t - window[0]!.t : 0;
     return {
       samples: this.samples,
       truncated: this.truncated,
@@ -148,7 +148,7 @@ export class RecorderSession {
   };
 
   resetStats = (): void => {
-    this.statsStartT = this.samples.length ? this.samples[this.samples.length - 1].t : 0;
+    this.statsStartT = this.samples.length ? this.samples[this.samples.length - 1]!.t : 0;
     this.emit();
   };
 
@@ -231,7 +231,7 @@ export class RecorderSession {
     const updated: Session = {
       ...s,
       sampleCount: this.seq,
-      segments: this.segments.map((g) => ({
+      segments: this.segments.map(g => ({
         seg: g.seg,
         function: g.function,
         acdc: g.acdc,

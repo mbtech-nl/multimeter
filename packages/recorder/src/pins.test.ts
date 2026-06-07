@@ -34,13 +34,13 @@ const reading = (v: number): Reading => ({
   flags: { ...noFlags },
 });
 
-const flush = () => new Promise((r) => setTimeout(r, 0));
+const flush = () => new Promise(r => setTimeout(r, 0));
 
 // The active pin session is whichever session newest-first lands at index 0; tests create a
 // fresh PinRecorder per case but share the IndexedDB, so we identify the session by name prefix.
 async function latestPinSession() {
   const list = await listSessions();
-  return list.find((s) => s.name.startsWith('Pins '));
+  return list.find(s => s.name.startsWith('Pins '));
 }
 
 describe('PinRecorder', () => {
@@ -59,7 +59,7 @@ describe('PinRecorder', () => {
 
     const snap = rec.getSnapshot();
     expect(snap.active).toBe(true);
-    expect(snap.readings.map((r) => r.baseValue)).toEqual([100]);
+    expect(snap.readings.map(r => r.baseValue)).toEqual([100]);
     // pin() emits twice on first pin: once on create (active), once after appending the reading.
     expect(notified).toBe(2);
 
@@ -68,7 +68,7 @@ describe('PinRecorder', () => {
     expect(sess?.endedAt).toBeNull();
     expect(sess?.sampleCount).toBe(1);
     const stored = await getReadings(sess!.id);
-    expect(stored.map((r) => r.baseValue)).toEqual([100]);
+    expect(stored.map(r => r.baseValue)).toEqual([100]);
   });
 
   it('subsequent pins append in capture order and keep metadata current', async () => {
@@ -78,12 +78,12 @@ describe('PinRecorder', () => {
     rec.pin(reading(219));
     await flush();
 
-    expect(rec.getSnapshot().readings.map((r) => r.baseValue)).toEqual([220, 221, 219]);
+    expect(rec.getSnapshot().readings.map(r => r.baseValue)).toEqual([220, 221, 219]);
 
     const sess = await latestPinSession();
     expect(sess?.sampleCount).toBe(3);
     expect(sess?.endedAt).toBeNull();
-    expect((await getReadings(sess!.id)).map((r) => r.baseValue)).toEqual([220, 221, 219]);
+    expect((await getReadings(sess!.id)).map(r => r.baseValue)).toEqual([220, 221, 219]);
   });
 
   it('undoLast removes the last capture from the snapshot and storage', async () => {
@@ -99,12 +99,12 @@ describe('PinRecorder', () => {
     rec.undoLast();
     await flush();
 
-    expect(rec.getSnapshot().readings.map((r) => r.baseValue)).toEqual([10, 20]);
+    expect(rec.getSnapshot().readings.map(r => r.baseValue)).toEqual([10, 20]);
     expect(notified).toBe(1);
 
     const sess = await latestPinSession();
     expect(sess?.sampleCount).toBe(2);
-    expect((await getReadings(sess!.id)).map((r) => r.baseValue)).toEqual([10, 20]);
+    expect((await getReadings(sess!.id)).map(r => r.baseValue)).toEqual([10, 20]);
   });
 
   it('undoLast is a no-op when there is nothing recorded', async () => {
@@ -154,7 +154,7 @@ describe('PinRecorder', () => {
     const finalized = await getSession(sess!.id);
     expect(finalized?.endedAt).not.toBeNull();
     // The finalized session keeps its captures and appears as a normal recording.
-    expect((await getReadings(sess!.id)).map((r) => r.baseValue)).toEqual([47, 48]);
+    expect((await getReadings(sess!.id)).map(r => r.baseValue)).toEqual([47, 48]);
     expect(finalized?.sampleCount).toBe(2);
   });
 
@@ -183,9 +183,9 @@ describe('PinRecorder', () => {
     const second = (await latestPinSession())!.id;
 
     expect(second).not.toBe(first);
-    expect((await getReadings(second)).map((r) => r.baseValue)).toEqual([2]);
+    expect((await getReadings(second)).map(r => r.baseValue)).toEqual([2]);
     // The first session is finalized and untouched by the new one.
-    expect((await getReadings(first)).map((r) => r.baseValue)).toEqual([1]);
+    expect((await getReadings(first)).map(r => r.baseValue)).toEqual([1]);
   });
 
   it('dispose stops notifying former subscribers', () => {
