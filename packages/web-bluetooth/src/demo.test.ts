@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { demoReading, demoVolts, isDemoMode } from './fakeMeter';
+import { demoReading, demoVolts, isDemoMode } from './demo';
 
 describe('demoVolts', () => {
   it('stays within a believable band over time', () => {

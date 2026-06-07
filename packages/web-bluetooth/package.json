@@ -1,0 +1,41 @@
+{
+  "name": "@mbtech-nl/multimeter-web-bluetooth",
+  "version": "0.0.0",
+  "description": "Web Bluetooth transport + the framework-agnostic MeterSession engine for BLE multimeters.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mbtech-nl/multimeter-protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/web-bluetooth": "^0.0.21",
+    "jsdom": "^29.1.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.8"
+  }
+}

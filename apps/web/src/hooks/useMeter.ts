@@ -4,11 +4,10 @@
 // handshake — not just gatt.connect() (PLAN §4 "Key boundaries").
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Transport } from '../ble/transport';
+import { Transport, isDemoMode, demoReading } from '@mbtech-nl/multimeter-web-bluetooth';
 import { FrameParser, COMMANDS, type FrameKind } from '@mbtech-nl/multimeter-protocol';
 import { decode } from '@mbtech-nl/multimeter-protocol';
 import type { Reading } from '@mbtech-nl/multimeter-protocol';
-import { isDemoMode, demoReading } from '../demo/fakeMeter';
 
 export type MeterState =
   | 'unsupported' // no Web Bluetooth
