@@ -5,9 +5,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { Reading, Sample, Session } from '../ble/types';
-import { quantityKey, toSample } from '../ble/types';
-import { computeStats } from '../lib/stats';
+import type { Reading, Sample, Session } from '@mbtech-nl/multimeter-protocol';
+import { quantityKey, toSample } from '@mbtech-nl/multimeter-protocol';
+import { computeStats } from '@mbtech-nl/multimeter-protocol';
 import type { Sessions } from '../hooks/useSessions';
 import { LiveChart, type LiveChartHandle } from './LiveChart';
 import type { SegmentInfo } from '../hooks/useRecorder';

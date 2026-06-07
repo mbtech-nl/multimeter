@@ -8,7 +8,7 @@
 // half a second" case the tool exists for (PLAN §1). Buckets that are entirely null
 // (OL / non-numeric) emit a single null so the chart still draws a gap there.
 
-import type { Sample } from '../ble/types';
+import type { Sample } from './types';
 
 export function decimate(samples: Sample[], maxPoints: number): Sample[] {
   const cap = Math.max(4, maxPoints);

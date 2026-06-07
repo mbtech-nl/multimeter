@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { decimate } from './decimate';
-import type { Sample } from '../ble/types';
+import type { Sample } from './types';
 
 const mk = (vals: (number | null)[]): Sample[] => vals.map((v, i) => ({ t: i, v, seg: 0 }));
 

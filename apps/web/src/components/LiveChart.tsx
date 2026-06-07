@@ -9,8 +9,8 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import uPlot from 'uplot';
 import type { AlignedData, Options } from 'uplot';
 import 'uplot/dist/uPlot.min.css';
-import { decimate } from '../lib/decimate';
-import type { Sample } from '../ble/types';
+import { decimate } from '@mbtech-nl/multimeter-protocol';
+import type { Sample } from '@mbtech-nl/multimeter-protocol';
 import type { SegmentInfo } from '../hooks/useRecorder';
 
 const MAX_POINTS = 2000; // render cap; full resolution lives in IndexedDB

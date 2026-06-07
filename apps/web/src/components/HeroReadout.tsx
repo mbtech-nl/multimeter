@@ -1,7 +1,7 @@
 // The hero readout: the value, large, exactly as the LCD shows it (PLAN §3.2).
 // Overload renders as "overload", not a fake number; NCV's strength bar shows its raw
 // glyphs. Numeric values come straight from displayText so they always match the meter.
-import type { Reading } from '../ble/types';
+import type { Reading } from '@mbtech-nl/multimeter-protocol';
 import { FlagBadges } from './FlagBadges';
 
 export function HeroReadout({ reading, held = false }: { reading: Reading; held?: boolean }) {

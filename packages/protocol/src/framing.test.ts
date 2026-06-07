@@ -1,7 +1,7 @@
 // FrameParser: the buffered framing must survive split/coalesced notifications and
 // resync after garbage — "one notification != one frame" (PROTOCOL §1, PLAN §4).
 import { describe, it, expect } from 'vitest';
-import { FrameParser, checksumOk } from './protocol';
+import { FrameParser, checksumOk } from './framing';
 
 const hex = (s: string) =>
   Uint8Array.from(

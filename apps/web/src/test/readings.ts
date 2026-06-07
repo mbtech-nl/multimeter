@@ -1,6 +1,6 @@
 // Shared test factory for Reading objects. Defaults to a plain DCV measurement; pass a
 // partial to override any field.
-import type { Reading } from '../ble/types';
+import type { Reading } from '@mbtech-nl/multimeter-protocol';
 
 export const noFlags = {
   max: false,

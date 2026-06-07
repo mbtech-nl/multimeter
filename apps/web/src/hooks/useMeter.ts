@@ -5,9 +5,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Transport } from '../ble/transport';
-import { FrameParser, COMMANDS, type FrameKind } from '../ble/protocol';
-import { decode } from '../ble/decode';
-import type { Reading } from '../ble/types';
+import { FrameParser, COMMANDS, type FrameKind } from '@mbtech-nl/multimeter-protocol';
+import { decode } from '@mbtech-nl/multimeter-protocol';
+import type { Reading } from '@mbtech-nl/multimeter-protocol';
 import { isDemoMode, demoReading } from '../demo/fakeMeter';
 
 export type MeterState =

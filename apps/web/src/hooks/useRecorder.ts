@@ -6,8 +6,8 @@
 // starts a new one and resets the chart + live stats window (§3.4).
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { quantityKey, type Reading, type Sample, type Session } from '../ble/types';
-import { computeStats, type Stats } from '../lib/stats';
+import { quantityKey, type Reading, type Sample, type Session } from '@mbtech-nl/multimeter-protocol';
+import { computeStats, type Stats } from '@mbtech-nl/multimeter-protocol';
 import * as storage from '../lib/storage';
 
 // Cap the in-memory current-segment buffer so an idle multi-hour session can't grow

@@ -2,9 +2,9 @@
 // active pin session (auto-starting one on the first pin); Stop finalizes it. A pin session
 // is a normal recording, so the finished result lives in Recordings — this panel is just the
 // live capture controls plus a running list and the match-spread ("are these matched?") answer.
-import type { Reading } from '../ble/types';
+import type { Reading } from '@mbtech-nl/multimeter-protocol';
 import type { PinSession as PinSessionState } from '../hooks/usePinSession';
-import { toCsv } from '../lib/csv';
+import { toCsv } from '@mbtech-nl/multimeter-protocol';
 import { downloadText, slug } from '../lib/download';
 
 function fmtNum(v: number): string {

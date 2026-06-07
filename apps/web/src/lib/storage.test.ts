@@ -12,7 +12,7 @@ import {
   deleteSession,
   renameSession,
 } from './storage';
-import type { Reading, Session } from '../ble/types';
+import type { Reading, Session } from '@mbtech-nl/multimeter-protocol';
 
 const noFlags = {
   max: false,

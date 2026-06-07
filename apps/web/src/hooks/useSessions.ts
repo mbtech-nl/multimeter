@@ -3,9 +3,9 @@
 // holds the list + the currently-opened session in React state.
 
 import { useCallback, useEffect, useState } from 'react';
-import type { Reading, Session } from '../ble/types';
+import type { Reading, Session } from '@mbtech-nl/multimeter-protocol';
 import * as storage from '../lib/storage';
-import { toCsv } from '../lib/csv';
+import { toCsv } from '@mbtech-nl/multimeter-protocol';
 import { downloadText, slug } from '../lib/download';
 
 export interface OpenedSession {

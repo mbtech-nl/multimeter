@@ -2,7 +2,7 @@
 // behave identically. CSV is full-resolution from IndexedDB (§3.3); PNG snapshots the
 // chart canvas.
 import { getReadings } from './storage';
-import { toCsv } from './csv';
+import { toCsv } from '@mbtech-nl/multimeter-protocol';
 import { downloadText, downloadBlob, slug } from './download';
 
 export async function exportCsv(target: { id: string; name: string }): Promise<void> {

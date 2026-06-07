@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { toCsv } from './csv';
-import type { Reading } from '../ble/types';
+import type { Reading } from './types';
 
 const noFlags = {
   max: false,

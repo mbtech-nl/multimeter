@@ -7,7 +7,7 @@
 // first pin auto-starts a session; Stop finalizes it; the next pin starts a fresh one.
 
 import { useCallback, useRef, useState } from 'react';
-import { quantityKey, type Reading, type Session } from '../ble/types';
+import { quantityKey, type Reading, type Session } from '@mbtech-nl/multimeter-protocol';
 import * as storage from '../lib/storage';
 
 const newId = () =>

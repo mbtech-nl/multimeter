@@ -2,7 +2,7 @@
 // Every frame here came off the physical UT60BTk and passes its 16-bit checksum.
 import { describe, it, expect } from 'vitest';
 import { decode } from './decode';
-import { checksumOk } from './protocol';
+import { checksumOk } from './framing';
 
 const hex = (s: string) =>
   Uint8Array.from(

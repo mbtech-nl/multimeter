@@ -5,7 +5,7 @@
 // only has to persist plain Readings: range changes (kΩ↔MΩ) keep one segment, a mode /
 // °C↔°F / AC↔DC change starts the next (PLAN §3.4).
 
-import { quantityKey, type Reading } from '../ble/types';
+import { quantityKey, type Reading } from './types';
 
 const COLUMNS = [
   'timestamp',

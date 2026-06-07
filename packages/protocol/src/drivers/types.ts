@@ -1,0 +1,56 @@
+// The driver abstraction: everything device-specific about turning a BLE byte stream into
+// Readings, expressed as plain data + pure functions so this package stays I/O-free and
+// Node-testable. The transport package (web-bluetooth) performs the actual GATT calls using
+// the UUIDs carried here; the MeterSession engine drives `handshake`/`onRequest`/`decode`.
+//
+// Phase 5 ships exactly one driver (uni-t). Phase 6 adds more (bdm, owon, …) — at which point
+// `match()` disambiguates the families that share a GATT service (e.g. 0xFFF0). See PLAN §6.
+
+import type { Reading } from '../types';
+import type { FrameKind, ParsedFrame } from '../framing';
+
+// A stateful framing buffer (one per connection). Structurally matches FrameParser so a
+// driver can return `new FrameParser()` directly.
+export interface DriverFramer {
+  push(chunk: Uint8Array): ParsedFrame[];
+  reset(): void;
+}
+
+// What a driver's handshake/keep-alive needs from the live connection. The engine supplies
+// it; the driver never touches the transport directly. `waitForFrame` resolves true when a
+// frame of a matching kind arrives before the timeout, false otherwise.
+export interface DriverIO {
+  write(bytes: Uint8Array): Promise<void> | void;
+  waitForFrame(pred: (kind: FrameKind) => boolean, timeoutMs: number): Promise<boolean>;
+}
+
+// The GATT profile to find on the device, as data. `write` lists candidate characteristic
+// UUIDs (first match wins) to tolerate firmware reshuffles.
+export interface DriverGattProfile {
+  service: string;
+  notify: string;
+  write: string[];
+}
+
+// Post-connect identification inputs. Auto-detect by advertised service where unambiguous;
+// fall back to the device name prefix.
+export interface DriverMatchContext {
+  name?: string;
+  services?: string[];
+}
+
+export interface Driver {
+  id: string; // 'uni-t'
+  label: string; // 'UNI-T BLE'
+  // Live-verified on real hardware vs. ported from the source app and unverified (PLAN §6
+  // "Verification honesty"). The UI surfaces this rather than implying all are bench-tested.
+  verification: 'live-tested' | 'ported-unverified';
+  namePrefixes: string[]; // requestDevice name filters
+  gatt: DriverGattProfile;
+  match(ctx: DriverMatchContext): boolean;
+  createFramer(): DriverFramer;
+  handshake(io: DriverIO): Promise<void>;
+  onRequest(frame: ParsedFrame, io: DriverIO): void; // answer keep-alive requests
+  decode(bytes: Uint8Array, ts: number): Reading;
+  controls?: { backlight?: Uint8Array }; // optional meter commands the device honors
+}

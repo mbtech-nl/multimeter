@@ -10,7 +10,7 @@ import { useMeter } from './hooks/useMeter';
 import { useRecorder } from './hooks/useRecorder';
 import { useSessions } from './hooks/useSessions';
 import { usePinSession } from './hooks/usePinSession';
-import type { Reading } from './ble/types';
+import type { Reading } from '@mbtech-nl/multimeter-protocol';
 import { useTheme } from './hooks/useTheme';
 import { useChartColor } from './hooks/useChartColor';
 import { resolveStroke } from './lib/chartColors';
