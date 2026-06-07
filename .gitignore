@@ -3,3 +3,9 @@ dist
 *.local
 .DS_Store
 *.tsbuildinfo
+
+# Internal working docs — kept on disk, not in the repo
+HANDOFF.md
+PLAN.md
+PROTOCOL.md
+captures/
