@@ -3,11 +3,12 @@
 // keep-alive requests, and brings the stream back after a drop by re-running the *full*
 // handshake — not just gatt.connect() (PLAN §4 "Key boundaries").
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Transport } from '../ble/transport';
 import { FrameParser, COMMANDS, type FrameKind } from '../ble/protocol';
 import { decode } from '../ble/decode';
 import type { Reading } from '../ble/types';
+import { isDemoMode, demoReading } from '../demo/fakeMeter';
 
 export type MeterState =
   | 'unsupported' // no Web Bluetooth
@@ -39,6 +40,17 @@ export function useMeter(): Meter {
 
   const transportRef = useRef<Transport | null>(null);
   const parserRef = useRef(new FrameParser());
+
+  // Demo mode (`?demo`): no BLE — feed a synthetic stream at the meter's ~4 Hz so the whole
+  // UI (hero, chart, stats, recording, export) can be driven and screenshotted device-free.
+  useEffect(() => {
+    if (!isDemoMode()) return;
+    setDeviceName('UT60BT (demo)');
+    setState('live');
+    const start = Date.now();
+    const id = setInterval(() => setReading(demoReading((Date.now() - start) / 1000, Date.now())), 250);
+    return () => clearInterval(id);
+  }, []);
 
   // One-shot waiters the handshake parks on, resolved when a matching frame arrives.
   // This is what lets us sequence GET-NAME → (name response) → GET-DATA → (stream)
