@@ -41,13 +41,13 @@ importers:
 
   apps/web:
     dependencies:
-      '@mbtech-nl/multimeter-protocol':
+      '@ble-multimeter/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
-      '@mbtech-nl/multimeter-react':
+      '@ble-multimeter/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@mbtech-nl/multimeter-recorder':
+      '@ble-multimeter/recorder':
         specifier: workspace:*
         version: link:../../packages/recorder
       react:
@@ -153,13 +153,13 @@ importers:
 
   packages/react:
     dependencies:
-      '@mbtech-nl/multimeter-protocol':
+      '@ble-multimeter/protocol':
         specifier: workspace:*
         version: link:../protocol
-      '@mbtech-nl/multimeter-recorder':
+      '@ble-multimeter/recorder':
         specifier: workspace:*
         version: link:../recorder
-      '@mbtech-nl/multimeter-web-bluetooth':
+      '@ble-multimeter/web-bluetooth':
         specifier: workspace:*
         version: link:../web-bluetooth
     devDependencies:
@@ -181,9 +181,6 @@ importers:
       fake-indexeddb:
         specifier: ^6.2.5
         version: 6.2.5
-      jsdom:
-        specifier: ^29.1.1
-        version: 29.1.1
       react:
         specifier: ^19.0.0
         version: 19.2.7
@@ -202,7 +199,7 @@ importers:
 
   packages/recorder:
     dependencies:
-      '@mbtech-nl/multimeter-protocol':
+      '@ble-multimeter/protocol':
         specifier: workspace:*
         version: link:../protocol
     devDependencies:
@@ -221,13 +218,13 @@ importers:
 
   packages/vue:
     dependencies:
-      '@mbtech-nl/multimeter-protocol':
+      '@ble-multimeter/protocol':
         specifier: workspace:*
         version: link:../protocol
-      '@mbtech-nl/multimeter-recorder':
+      '@ble-multimeter/recorder':
         specifier: workspace:*
         version: link:../recorder
-      '@mbtech-nl/multimeter-web-bluetooth':
+      '@ble-multimeter/web-bluetooth':
         specifier: workspace:*
         version: link:../web-bluetooth
     devDependencies:
@@ -255,7 +252,7 @@ importers:
 
   packages/web-bluetooth:
     dependencies:
-      '@mbtech-nl/multimeter-protocol':
+      '@ble-multimeter/protocol':
         specifier: workspace:*
         version: link:../protocol
     devDependencies:

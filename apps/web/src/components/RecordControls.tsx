@@ -3,7 +3,7 @@
 // session-name field, and a live sample counter.
 
 import { useState } from 'react';
-import type { RecState } from '@mbtech-nl/multimeter-react';
+import type { RecState } from '@ble-multimeter/react';
 
 interface Props {
   recState: RecState;

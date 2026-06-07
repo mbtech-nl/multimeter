@@ -3,7 +3,7 @@
 // — never the decimated chart series (§3.3). No external DB lib; raw IndexedDB behind a
 // small promise wrapper. All IO lives here so hooks/components stay storage-agnostic.
 
-import type { Reading, Session } from '@mbtech-nl/multimeter-protocol';
+import type { Reading, Session } from '@ble-multimeter/protocol';
 
 const DB_NAME = 'ut60bt';
 const DB_VERSION = 1;

@@ -1,6 +1,6 @@
 // Annunciator badges mirroring the meter's LCD indicators. Quiet badges for normal
 // modes; low-battery and HV-warning render as prominent alerts (PLAN §3.2).
-import type { Reading } from '@mbtech-nl/multimeter-protocol';
+import type { Reading } from '@ble-multimeter/protocol';
 
 function Badge({
   children,

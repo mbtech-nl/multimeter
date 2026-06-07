@@ -15,7 +15,7 @@ import {
   type DriverIO,
   type FrameKind,
   type Reading,
-} from '@mbtech-nl/multimeter-protocol';
+} from '@ble-multimeter/protocol';
 import { Transport } from './transport';
 import { isDemoMode, demoReading } from './demo';
 

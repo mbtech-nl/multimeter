@@ -1,9 +1,9 @@
 // React binding for the SessionsStore engine (Sessions list). Thin adapter over
-// @mbtech-nl/multimeter-recorder.
+// @ble-multimeter/recorder.
 
 import { useEffect, useRef, useSyncExternalStore } from 'react';
-import type { Session } from '@mbtech-nl/multimeter-protocol';
-import { SessionsStore, type OpenedSession } from '@mbtech-nl/multimeter-recorder';
+import type { Session } from '@ble-multimeter/protocol';
+import { SessionsStore, type OpenedSession } from '@ble-multimeter/recorder';
 
 export type { OpenedSession };
 

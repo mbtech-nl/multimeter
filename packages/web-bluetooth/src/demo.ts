@@ -8,7 +8,7 @@ import {
   RANGE_UNITS,
   unitInfo,
   type Reading,
-} from '@mbtech-nl/multimeter-protocol';
+} from '@ble-multimeter/protocol';
 
 export function isDemoMode(): boolean {
   return typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo');

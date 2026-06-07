@@ -6,11 +6,11 @@
 // so Back works and a session is bookmarkable.
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { useMeter } from '@mbtech-nl/multimeter-react';
-import { useRecorder } from '@mbtech-nl/multimeter-react';
-import { useSessions } from '@mbtech-nl/multimeter-react';
-import { usePinSession } from '@mbtech-nl/multimeter-react';
-import type { Reading } from '@mbtech-nl/multimeter-protocol';
+import { useMeter } from '@ble-multimeter/react';
+import { useRecorder } from '@ble-multimeter/react';
+import { useSessions } from '@ble-multimeter/react';
+import { usePinSession } from '@ble-multimeter/react';
+import type { Reading } from '@ble-multimeter/protocol';
 import { useTheme } from './hooks/useTheme';
 import { useChartColor } from './hooks/useChartColor';
 import { resolveStroke } from './lib/chartColors';
@@ -289,7 +289,7 @@ export default function App() {
 
       <footer className="border-t border-zinc-800 px-4 py-3 text-center text-xs text-zinc-500">
         <a
-          href="https://github.com/mbtech-nl/multimeter"
+          href="https://github.com/ble-multimeter/multimeter"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 hover:text-zinc-300"

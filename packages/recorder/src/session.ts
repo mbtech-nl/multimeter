@@ -17,7 +17,7 @@ import {
   type Sample,
   type Session,
   type Stats,
-} from '@mbtech-nl/multimeter-protocol';
+} from '@ble-multimeter/protocol';
 import * as storage from './storage';
 import { newId } from './ids';
 

@@ -16,9 +16,9 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@mbtech-nl/multimeter-protocol": "workspace:*",
-    "@mbtech-nl/multimeter-react": "workspace:*",
-    "@mbtech-nl/multimeter-recorder": "workspace:*",
+    "@ble-multimeter/protocol": "workspace:*",
+    "@ble-multimeter/react": "workspace:*",
+    "@ble-multimeter/recorder": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.17.0",

@@ -1,6 +1,6 @@
 // Test factory for Reading objects (local to this package's tests). Defaults to a plain DCV
 // measurement; pass a partial to override any field.
-import type { Reading } from '@mbtech-nl/multimeter-protocol';
+import type { Reading } from '@ble-multimeter/protocol';
 
 export const noFlags = {
   max: false,

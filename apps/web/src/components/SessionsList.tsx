@@ -5,9 +5,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { Session } from '@mbtech-nl/multimeter-protocol';
-import { computeStats, splitSegments } from '@mbtech-nl/multimeter-protocol';
-import type { Sessions } from '@mbtech-nl/multimeter-react';
+import type { Session } from '@ble-multimeter/protocol';
+import { computeStats, splitSegments } from '@ble-multimeter/protocol';
+import type { Sessions } from '@ble-multimeter/react';
 import { LiveChart, type LiveChartHandle } from './LiveChart';
 import { StatsPanel } from './StatsPanel';
 import { ExportButtons } from './ExportButtons';

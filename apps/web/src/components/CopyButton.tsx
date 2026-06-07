@@ -1,7 +1,7 @@
 // Copy the current reading to the clipboard, exactly as the hero shows it ("4.762 V", "OL").
 // Lives in the hero action row next to Hold. Renders nothing when there's no value to copy.
 import { useEffect, useRef, useState } from 'react';
-import type { Reading } from '@mbtech-nl/multimeter-protocol';
+import type { Reading } from '@ble-multimeter/protocol';
 
 export function CopyButton({ reading }: { reading: Reading }) {
   const { overload, displayText, displayUnit } = reading;

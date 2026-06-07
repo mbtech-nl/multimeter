@@ -1,9 +1,9 @@
 // Vue binding for the SessionsStore engine (Sessions list).
 
 import { computed, shallowRef, onScopeDispose } from 'vue';
-import { SessionsStore } from '@mbtech-nl/multimeter-recorder';
+import { SessionsStore } from '@ble-multimeter/recorder';
 
-export type { OpenedSession } from '@mbtech-nl/multimeter-recorder';
+export type { OpenedSession } from '@ble-multimeter/recorder';
 
 export function useSessions() {
   const store = new SessionsStore();

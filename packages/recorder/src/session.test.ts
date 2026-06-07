@@ -4,7 +4,7 @@ import 'fake-indexeddb/auto';
 import { describe, it, expect } from 'vitest';
 import { RecorderSession } from './session';
 import { getReadings, getSession } from './storage';
-import type { Reading } from '@mbtech-nl/multimeter-protocol';
+import type { Reading } from '@ble-multimeter/protocol';
 
 const noFlags = {
   max: false,

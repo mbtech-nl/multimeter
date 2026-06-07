@@ -1,12 +1,12 @@
 // React binding for the RecorderSession engine. Feeds each new Reading into the engine and
 // mirrors its snapshot into React. All buffer/stats/persistence logic lives in the engine
-// (@mbtech-nl/multimeter-recorder).
+// (@ble-multimeter/recorder).
 
 import { useEffect, useRef, useSyncExternalStore } from 'react';
-import type { Reading } from '@mbtech-nl/multimeter-protocol';
-import { RecorderSession, type RecorderSnapshot } from '@mbtech-nl/multimeter-recorder';
+import type { Reading } from '@ble-multimeter/protocol';
+import { RecorderSession, type RecorderSnapshot } from '@ble-multimeter/recorder';
 
-export type { RecState, SegmentInfo } from '@mbtech-nl/multimeter-recorder';
+export type { RecState, SegmentInfo } from '@ble-multimeter/recorder';
 
 export interface Recorder extends RecorderSnapshot {
   resetStats: () => void;

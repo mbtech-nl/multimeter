@@ -2,10 +2,10 @@
 // and exposes its snapshot as computed refs.
 
 import { computed, shallowRef, watch, toValue, onScopeDispose, type MaybeRefOrGetter } from 'vue';
-import type { Reading } from '@mbtech-nl/multimeter-protocol';
-import { RecorderSession } from '@mbtech-nl/multimeter-recorder';
+import type { Reading } from '@ble-multimeter/protocol';
+import { RecorderSession } from '@ble-multimeter/recorder';
 
-export type { RecState, SegmentInfo } from '@mbtech-nl/multimeter-recorder';
+export type { RecState, SegmentInfo } from '@ble-multimeter/recorder';
 
 export function useRecorder(reading: MaybeRefOrGetter<Reading | null>) {
   const rec = new RecorderSession();

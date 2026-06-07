@@ -1,7 +1,7 @@
 // Export actions shared by the ExportButtons UI and the keyboard shortcuts, so both paths
 // behave identically. CSV is the recorder package's full-resolution export (from IndexedDB,
 // §3.3); PNG snapshots the chart canvas, which is app-only (uPlot).
-import { exportSessionCsv, downloadBlob, slug } from '@mbtech-nl/multimeter-recorder';
+import { exportSessionCsv, downloadBlob, slug } from '@ble-multimeter/recorder';
 
 export const exportCsv = exportSessionCsv;
 

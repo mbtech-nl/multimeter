@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { effectScope, ref } from 'vue';
 import { useRecorder } from './useRecorder';
 import { useMeter } from './useMeter';
-import type { Reading } from '@mbtech-nl/multimeter-protocol';
+import type { Reading } from '@ble-multimeter/protocol';
 
 function reading(over: Partial<Reading> = {}): Reading {
   return {

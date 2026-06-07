@@ -22,7 +22,7 @@ export function UnsupportedBrowser() {
         Try the demo — no meter needed
       </a>
       <a
-        href="https://github.com/mbtech-nl/multimeter"
+        href="https://github.com/ble-multimeter/multimeter"
         target="_blank"
         rel="noopener noreferrer"
         className="mt-2 inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300"

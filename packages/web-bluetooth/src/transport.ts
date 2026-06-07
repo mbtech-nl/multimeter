@@ -8,7 +8,7 @@
 // exposes (PLAN §6 — Phase 6 grows the registry; this code is unchanged). For the UT60BT
 // the matched profile is uni-t (ISSC Transparent UART, PROTOCOL §1).
 
-import { drivers, allNamePrefixes, type DriverGattProfile } from '@mbtech-nl/multimeter-protocol';
+import { drivers, allNamePrefixes, type DriverGattProfile } from '@ble-multimeter/protocol';
 
 const DEVICE_INFO_SERVICE = 0x180a; // model/serial/firmware strings — nice-to-have
 

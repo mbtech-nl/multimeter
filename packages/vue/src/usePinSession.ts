@@ -1,7 +1,7 @@
 // Vue binding for the PinRecorder engine (per-item pin capture).
 
 import { computed, shallowRef, onScopeDispose } from 'vue';
-import { PinRecorder } from '@mbtech-nl/multimeter-recorder';
+import { PinRecorder } from '@ble-multimeter/recorder';
 
 export function usePinSession() {
   const pins = new PinRecorder();

@@ -1,15 +1,15 @@
 # Multimeter
 
-[![CI](https://github.com/mbtech-nl/multimeter/actions/workflows/ci.yml/badge.svg)](https://github.com/mbtech-nl/multimeter/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/mbtech-nl/multimeter/graph/badge.svg)](https://codecov.io/gh/mbtech-nl/multimeter)
+[![CI](https://github.com/ble-multimeter/multimeter/actions/workflows/ci.yml/badge.svg)](https://github.com/ble-multimeter/multimeter/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/ble-multimeter/multimeter/graph/badge.svg)](https://codecov.io/gh/ble-multimeter/multimeter)
 
 A browser companion for the **UNI-T UT60BT** Bluetooth multimeter: a live, full-screen
 readout with charting, statistics, recording, and CSV/PNG export. It runs entirely in your
 browser over [Web Bluetooth](https://developer.mozilla.org/docs/Web/API/Web_Bluetooth_API) —
 no install, no account, no data leaves your machine — and installs as an offline PWA.
 
-**▶︎ [Open the app](https://mbtech-nl.github.io/multimeter/)** &nbsp;·&nbsp;
-[Try the demo](https://mbtech-nl.github.io/multimeter/?demo) (no meter needed)
+**▶︎ [Open the app](https://ble-multimeter.github.io/multimeter/)** &nbsp;·&nbsp;
+[Try the demo](https://ble-multimeter.github.io/multimeter/?demo) (no meter needed)
 
 <p align="center">
   <img src="assets/live-dark.png" alt="Live readout with chart and statistics" width="100%">
@@ -119,13 +119,13 @@ BLE-multimeter UI (in React **or** Vue) or a headless Node tool on top:
 
 | Package                               | What it is                                                                                                                                                                |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@mbtech-nl/multimeter-protocol`      | Pure, I/O-free core: the `Reading` model + unit tables, the uni-t decode/framing, stats/decimate/CSV, and the device-`Driver` interface + registry. Zero deps; Node-safe. |
-| `@mbtech-nl/multimeter-web-bluetooth` | Web Bluetooth `Transport` + the framework-agnostic `MeterSession` engine (connect · handshake · keep-alive · reconnect · demo).                                           |
-| `@mbtech-nl/multimeter-recorder`      | Bluetooth-independent `RecorderSession` · `SessionsStore` · `PinRecorder` engines + the IndexedDB session store.                                                          |
-| `@mbtech-nl/multimeter-react`         | React hooks: `useMeter` · `useRecorder` · `useSessions` · `usePinSession`.                                                                                                |
-| `@mbtech-nl/multimeter-vue`           | The same four as Vue composables.                                                                                                                                         |
+| `@ble-multimeter/protocol`      | Pure, I/O-free core: the `Reading` model + unit tables, the uni-t decode/framing, stats/decimate/CSV, and the device-`Driver` interface + registry. Zero deps; Node-safe. |
+| `@ble-multimeter/web-bluetooth` | Web Bluetooth `Transport` + the framework-agnostic `MeterSession` engine (connect · handshake · keep-alive · reconnect · demo).                                           |
+| `@ble-multimeter/recorder`      | Bluetooth-independent `RecorderSession` · `SessionsStore` · `PinRecorder` engines + the IndexedDB session store.                                                          |
+| `@ble-multimeter/react`         | React hooks: `useMeter` · `useRecorder` · `useSessions` · `usePinSession`.                                                                                                |
+| `@ble-multimeter/vue`           | The same four as Vue composables.                                                                                                                                         |
 
-`apps/web` consumes `@mbtech-nl/multimeter-react`, so the app dogfoods the binding it ships.
+`apps/web` consumes `@ble-multimeter/react`, so the app dogfoods the binding it ships.
 The packages are structured to be publishable (per-package build → ESM + types) but aren't on
 npm yet.
 
