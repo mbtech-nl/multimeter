@@ -5,7 +5,7 @@
 import 'fake-indexeddb/auto';
 import { describe, it, expect } from 'vitest';
 import { PinRecorder } from './pins';
-import { listSessions, getSession, getReadings } from './storage';
+import { listSessions, getSession, readSamples } from './storage';
 import type { Reading } from '@ble-multimeter/protocol';
 
 const noFlags = {
@@ -67,7 +67,7 @@ describe('PinRecorder', () => {
     expect(sess).toBeDefined();
     expect(sess?.endedAt).toBeNull();
     expect(sess?.sampleCount).toBe(1);
-    const stored = await getReadings(sess!.id);
+    const stored = await readSamples(sess!.id, 'pin');
     expect(stored.map(r => r.baseValue)).toEqual([100]);
   });
 
@@ -83,7 +83,7 @@ describe('PinRecorder', () => {
     const sess = await latestPinSession();
     expect(sess?.sampleCount).toBe(3);
     expect(sess?.endedAt).toBeNull();
-    expect((await getReadings(sess!.id)).map(r => r.baseValue)).toEqual([220, 221, 219]);
+    expect((await readSamples(sess!.id, 'pin')).map(r => r.baseValue)).toEqual([220, 221, 219]);
   });
 
   it('undoLast removes the last capture from the snapshot and storage', async () => {
@@ -104,7 +104,7 @@ describe('PinRecorder', () => {
 
     const sess = await latestPinSession();
     expect(sess?.sampleCount).toBe(2);
-    expect((await getReadings(sess!.id)).map(r => r.baseValue)).toEqual([10, 20]);
+    expect((await readSamples(sess!.id, 'pin')).map(r => r.baseValue)).toEqual([10, 20]);
   });
 
   it('undoLast is a no-op when there is nothing recorded', async () => {
@@ -154,7 +154,7 @@ describe('PinRecorder', () => {
     const finalized = await getSession(sess!.id);
     expect(finalized?.endedAt).not.toBeNull();
     // The finalized session keeps its captures and appears as a normal recording.
-    expect((await getReadings(sess!.id)).map(r => r.baseValue)).toEqual([47, 48]);
+    expect((await readSamples(sess!.id, 'pin')).map(r => r.baseValue)).toEqual([47, 48]);
     expect(finalized?.sampleCount).toBe(2);
   });
 
@@ -183,9 +183,9 @@ describe('PinRecorder', () => {
     const second = (await latestPinSession())!.id;
 
     expect(second).not.toBe(first);
-    expect((await getReadings(second)).map(r => r.baseValue)).toEqual([2]);
+    expect((await readSamples(second, 'pin')).map(r => r.baseValue)).toEqual([2]);
     // The first session is finalized and untouched by the new one.
-    expect((await getReadings(first)).map(r => r.baseValue)).toEqual([1]);
+    expect((await readSamples(first, 'pin')).map(r => r.baseValue)).toEqual([1]);
   });
 
   it('dispose stops notifying former subscribers', () => {

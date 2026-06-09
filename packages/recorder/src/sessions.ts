@@ -3,13 +3,21 @@
 // comes from storage; this just holds the list + the currently-opened session and exposes a
 // subscribe/getSnapshot the React/Vue bindings mirror. Extracted from the React useSessions hook.
 
-import { toCsv, type Reading, type Session } from '@ble-multimeter/protocol';
+import { toCsv, type CsvChannel, type Reading, type Session } from '@ble-multimeter/protocol';
 import * as storage from './storage';
 import { downloadText, slug } from './download';
 
+// One channel's full-resolution readings for the read-only viewer (chart/stats per channel).
+export interface OpenedChannel {
+  id: string;
+  label: string;
+  kind: 'meter' | 'derived';
+  readings: Reading[];
+}
+
 export interface OpenedSession {
   session: Session;
-  readings: Reading[]; // full resolution, for the read-only chart/stats + export
+  channels: OpenedChannel[]; // full resolution per channel, for the read-only chart/stats + export
 }
 
 export interface SessionsSnapshot {
@@ -39,9 +47,18 @@ export class SessionsStore {
   };
 
   open = (id: string): void => {
-    void Promise.all([storage.getSession(id), storage.getReadings(id)]).then(
-      ([session, readings]) => {
-        if (session) this.set({ opened: { session, readings } });
+    void Promise.all([storage.getSession(id), storage.readAllSamples(id)]).then(
+      ([session, byChannel]) => {
+        if (!session) return;
+        // Build one OpenedChannel per recorded channel, in the session's channel order, pulling
+        // the full-resolution samples for each from the per-channel store.
+        const channels: OpenedChannel[] = (session.channels ?? []).map(ci => ({
+          id: ci.id,
+          label: ci.label,
+          kind: ci.kind,
+          readings: byChannel.get(ci.id) ?? [],
+        }));
+        this.set({ opened: { session, channels } });
       },
     );
   };
@@ -73,9 +90,19 @@ export class SessionsStore {
   };
 }
 
-// Standalone CSV export for a recording (by id + name) — full-resolution from IndexedDB.
-// Shared by SessionsStore.exportCsv and the app's export shortcut (which has no Session object).
+// Standalone long-format CSV export for a recording (by id + name) — full-resolution from
+// IndexedDB, all channels merge-sorted chronologically (plan-7.md §3.4). Shared by
+// SessionsStore.exportCsv and the app's export shortcut (which has no Session object). The channel
+// labels come from the Session row; samples come from the per-channel store.
 export async function exportSessionCsv(target: { id: string; name: string }): Promise<void> {
-  const readings = await storage.getReadings(target.id);
-  downloadText(toCsv(readings), `${slug(target.name)}.csv`);
+  const [session, byChannel] = await Promise.all([
+    storage.getSession(target.id),
+    storage.readAllSamples(target.id),
+  ]);
+  const csvChannels: CsvChannel[] = (session?.channels ?? []).map(ci => ({
+    channel: ci.label,
+    readings: byChannel.get(ci.id) ?? [],
+  }));
+  // A session row with no channels recorded (edge case) still produces a valid header-only CSV.
+  downloadText(toCsv(csvChannels), `${slug(target.name)}.csv`);
 }

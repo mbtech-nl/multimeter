@@ -1,19 +1,25 @@
-// IndexedDB persistence for recordings (PLAN §3.3). Recordings survive a reload or an
-// accidental disconnect, and CSV export reads full-resolution Readings straight from here
-// — never the decimated chart series (§3.3). No external DB lib; raw IndexedDB behind a
-// small promise wrapper. All IO lives here so hooks/components stay storage-agnostic.
+// IndexedDB persistence for recordings (PLAN §3.3, plan-7.md §3.3). Recordings survive a reload or
+// an accidental disconnect, and CSV export reads full-resolution Readings straight from here —
+// never the decimated chart series (§3.3). No external DB lib; raw IndexedDB behind a small
+// promise wrapper. All IO lives here so hooks/components stay storage-agnostic.
+//
+// Phase 7: multi-channel. The `samples` store is keyed [sessionId, channelId, seq], so a recording
+// stores each meter/derived channel as its own ordered run. The key path changed, and key paths are
+// immutable per store, so the upgrade **deletes and recreates** the store — destructive, dropping
+// any pre-Phase-7 dev recordings (fine pre-1.0, no back-compat). DB_VERSION is bumped accordingly.
 
 import type { Reading, Session } from '@ble-multimeter/protocol';
 
 const DB_NAME = 'ut60bt';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // bumped for the multi-channel re-key (destructive)
 const SESSIONS = 'sessions';
 const SAMPLES = 'samples';
 
-// One stored sample row. The composite key [sessionId, seq] keeps a session's samples
-// contiguous and ordered, so a range scan reads them back in capture order.
+// One stored sample row. The composite key [sessionId, channelId, seq] keeps each channel's samples
+// contiguous and ordered within a session, so a range scan reads one channel back in capture order.
 interface SampleRow {
   sessionId: string;
+  channelId: string;
   seq: number;
   r: Reading;
 }
@@ -29,9 +35,11 @@ function openDb(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(SESSIONS)) {
         db.createObjectStore(SESSIONS, { keyPath: 'id' });
       }
-      if (!db.objectStoreNames.contains(SAMPLES)) {
-        db.createObjectStore(SAMPLES, { keyPath: ['sessionId', 'seq'] });
-      }
+      // Re-key samples to [sessionId, channelId, seq]. The key path is immutable, so we drop and
+      // recreate — any existing dev recordings' samples are wiped (the session index rows survive,
+      // but their samples are gone; acceptable pre-1.0). New sessions are multi-channel from here.
+      if (db.objectStoreNames.contains(SAMPLES)) db.deleteObjectStore(SAMPLES);
+      db.createObjectStore(SAMPLES, { keyPath: ['sessionId', 'channelId', 'seq'] });
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -63,20 +71,25 @@ function reqResult<T>(req: IDBRequest<T>): Promise<T> {
   });
 }
 
-// All [sessionId, *] keys: [id] sorts before any [id, seq], and [id, []] after any of
-// them (arrays rank above numbers in IndexedDB key order), so this brackets exactly one
-// session's samples.
+// All [sessionId, *] keys (every channel + seq of one session): [id] sorts before any
+// [id, channelId, …], and [id, []] after any of them (arrays rank above strings/numbers in
+// IndexedDB key order), so this brackets exactly one session's samples across all channels.
 const sessionRange = (id: string) => IDBKeyRange.bound([id], [id, []]);
+
+// All [sessionId, channelId, *] keys: brackets exactly one channel's samples within a session.
+const channelRange = (id: string, channelId: string) =>
+  IDBKeyRange.bound([id, channelId], [id, channelId, []]);
 
 export async function createSession(session: Session): Promise<void> {
   const db = await openDb();
   await tx(db, SESSIONS, 'readwrite', t => t.objectStore(SESSIONS).put(session));
 }
 
-// Append a batch of readings under one transaction (a frame arrives a few times a second;
-// the recorder buffers and flushes in batches rather than one tx per sample).
+// Append a batch of readings for one channel under one transaction (frames arrive a few times a
+// second per channel; the recorder buffers and flushes in batches rather than one tx per sample).
 export async function appendSamples(
   sessionId: string,
+  channelId: string,
   startSeq: number,
   readings: Reading[],
 ): Promise<void> {
@@ -84,15 +97,23 @@ export async function appendSamples(
   const db = await openDb();
   await tx(db, SAMPLES, 'readwrite', t => {
     const store = t.objectStore(SAMPLES);
-    readings.forEach((r, i) => store.put({ sessionId, seq: startSeq + i, r } as SampleRow));
+    readings.forEach((r, i) =>
+      store.put({ sessionId, channelId, seq: startSeq + i, r } as SampleRow),
+    );
   });
 }
 
-// Delete one sample row by its composite key — used by the pin session's "undo last" to
-// drop a mis-captured pin (pins always append at the end, so seq stays contiguous).
-export async function deleteSample(sessionId: string, seq: number): Promise<void> {
+// Delete one sample row by its composite key — used by the pin session's "undo last" to drop a
+// mis-captured pin (pins always append at the end of a channel, so seq stays contiguous).
+export async function deleteSample(
+  sessionId: string,
+  channelId: string,
+  seq: number,
+): Promise<void> {
   const db = await openDb();
-  await tx(db, SAMPLES, 'readwrite', t => t.objectStore(SAMPLES).delete([sessionId, seq]));
+  await tx(db, SAMPLES, 'readwrite', t =>
+    t.objectStore(SAMPLES).delete([sessionId, channelId, seq]),
+  );
 }
 
 export async function updateSession(session: Session): Promise<void> {
@@ -111,14 +132,29 @@ export async function listSessions(): Promise<Session[]> {
   return all.sort((a, b) => b.startedAt - a.startedAt); // newest first
 }
 
-// Full-resolution Readings for a session, in capture order — the source for CSV export
-// and read-only reopen.
-export async function getReadings(id: string): Promise<Reading[]> {
+// Full-resolution Readings for one channel of a session, in capture order.
+export async function readSamples(id: string, channelId: string): Promise<Reading[]> {
+  const db = await openDb();
+  const rows = await reqResult<SampleRow[]>(
+    db.transaction(SAMPLES).objectStore(SAMPLES).getAll(channelRange(id, channelId)),
+  );
+  return rows.map(row => row.r);
+}
+
+// Every channel's Readings for a session, grouped by channelId (capture order within each). The
+// source for CSV export (merge-sorted across channels) and the read-only multi-channel viewer.
+export async function readAllSamples(id: string): Promise<Map<string, Reading[]>> {
   const db = await openDb();
   const rows = await reqResult<SampleRow[]>(
     db.transaction(SAMPLES).objectStore(SAMPLES).getAll(sessionRange(id)),
   );
-  return rows.map(row => row.r);
+  const out = new Map<string, Reading[]>();
+  for (const row of rows) {
+    const arr = out.get(row.channelId) ?? [];
+    arr.push(row.r);
+    out.set(row.channelId, arr);
+  }
+  return out;
 }
 
 export async function deleteSession(id: string): Promise<void> {

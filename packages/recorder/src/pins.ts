@@ -7,9 +7,12 @@
 // first pin auto-starts a session; stop() finalizes it; the next pin starts a fresh one.
 // Extracted from the React usePinSession hook.
 
-import { deriveSegments, type Reading, type Session } from '@ble-multimeter/protocol';
+import { deriveSegments, type ChannelInfo, type Reading, type Session } from '@ble-multimeter/protocol';
 import * as storage from './storage';
 import { newId } from './ids';
+
+// A pin session is a single meter channel — multi-channel is just N=1. This is its fixed id.
+const PIN_CHANNEL = 'pin';
 
 export interface PinSnapshot {
   active: boolean;
@@ -36,10 +39,19 @@ export class PinRecorder {
 
   private persistMeta(rs: Reading[]): void {
     const s = this.session!;
+    const last = rs[rs.length - 1];
+    const channel: ChannelInfo = {
+      id: PIN_CHANNEL,
+      label: 'Pins',
+      kind: 'meter',
+      function: last?.function ?? '',
+      unit: last?.baseUnit ?? '',
+      segments: deriveSegments(rs),
+    };
     const updated: Session = {
       ...s,
       sampleCount: rs.length,
-      segments: deriveSegments(rs),
+      channels: rs.length ? [channel] : [],
       endedAt: null,
     };
     this.session = updated;
@@ -54,7 +66,7 @@ export class PinRecorder {
         startedAt: Date.now(),
         endedAt: null,
         sampleCount: 0,
-        segments: [],
+        channels: [],
       };
       this.session = session;
       void storage.createSession(session);
@@ -62,7 +74,7 @@ export class PinRecorder {
     }
     const seq = this.snap.readings.length;
     const next = [...this.snap.readings, r];
-    void storage.appendSamples(this.session.id, seq, [r]);
+    void storage.appendSamples(this.session.id, PIN_CHANNEL, seq, [r]);
     this.persistMeta(next);
     this.set({ readings: next });
   };
@@ -72,7 +84,7 @@ export class PinRecorder {
     if (!s || this.snap.readings.length === 0) return;
     const seq = this.snap.readings.length - 1;
     const next = this.snap.readings.slice(0, -1);
-    void storage.deleteSample(s.id, seq);
+    void storage.deleteSample(s.id, PIN_CHANNEL, seq);
     this.persistMeta(next);
     this.set({ readings: next });
   };

@@ -6,11 +6,19 @@
 
 export * as storage from './storage';
 export { downloadText, downloadBlob, slug } from './download';
-export { RecorderSession, type RecState, type SegmentInfo, type RecorderSnapshot } from './session';
+export {
+  RecorderSession,
+  type RecState,
+  type SegmentInfo,
+  type RecorderSnapshot,
+  type ChannelView,
+  type ChannelSpec,
+} from './session';
 export {
   SessionsStore,
   exportSessionCsv,
   type OpenedSession,
+  type OpenedChannel,
   type SessionsSnapshot,
 } from './sessions';
 export { PinRecorder, type PinSnapshot } from './pins';

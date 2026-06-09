@@ -5,8 +5,18 @@
 import 'fake-indexeddb/auto';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { SessionsStore, exportSessionCsv } from './sessions';
-import { createSession, appendSamples, getSession, getReadings } from './storage';
-import type { Reading, Session } from '@ble-multimeter/protocol';
+import { createSession, appendSamples, getSession, readSamples } from './storage';
+import type { ChannelInfo, Reading, Session } from '@ble-multimeter/protocol';
+
+// Add a meter ChannelInfo to a session row so open()/export can find the channel by id.
+const meterChannel = (id: string, label = id): ChannelInfo => ({
+  id,
+  label,
+  kind: 'meter',
+  function: 'DCV',
+  unit: 'V',
+  segments: [],
+});
 
 const noFlags = {
   max: false,
@@ -34,13 +44,18 @@ const reading = (ts: number, v: number): Reading => ({
   flags: { ...noFlags },
 });
 
-const session = (id: string, name = 'test', startedAt = 1000): Session => ({
+const session = (
+  id: string,
+  name = 'test',
+  startedAt = 1000,
+  channels: ChannelInfo[] = [],
+): Session => ({
   id,
   name,
   startedAt,
   endedAt: null,
   sampleCount: 0,
-  segments: [],
+  channels,
 });
 
 // Two ticks: the store's mutators chain several awaits (openDb -> request -> set) before the
@@ -74,9 +89,9 @@ describe('SessionsStore', () => {
     expect(notified).toBe(1);
   });
 
-  it('open loads a session together with its full-resolution readings', async () => {
-    await createSession(session('open-1', 'opened'));
-    await appendSamples('open-1', 0, [reading(1, 10), reading(2, 20)]);
+  it('open loads a session together with its per-channel full-resolution readings', async () => {
+    await createSession(session('open-1', 'opened', 1000, [meterChannel('v', 'V source')]));
+    await appendSamples('open-1', 'v', 0, [reading(1, 10), reading(2, 20)]);
 
     const store = new SessionsStore();
     let notified = 0;
@@ -88,7 +103,9 @@ describe('SessionsStore', () => {
     const opened = store.getSnapshot().opened;
     expect(opened?.session.id).toBe('open-1');
     expect(opened?.session.name).toBe('opened');
-    expect(opened?.readings.map(r => r.baseValue)).toEqual([10, 20]);
+    expect(opened?.channels).toHaveLength(1);
+    expect(opened?.channels[0]!.label).toBe('V source');
+    expect(opened?.channels[0]!.readings.map(r => r.baseValue)).toEqual([10, 20]);
     expect(notified).toBe(1);
   });
 
@@ -148,8 +165,8 @@ describe('SessionsStore', () => {
   });
 
   it('remove deletes the session (and its samples) and drops it from the list', async () => {
-    await createSession(session('del-1'));
-    await appendSamples('del-1', 0, [reading(1, 1)]);
+    await createSession(session('del-1', 'test', 1000, [meterChannel('v')]));
+    await appendSamples('del-1', 'v', 0, [reading(1, 1)]);
 
     const store = new SessionsStore();
     store.refresh();
@@ -161,7 +178,7 @@ describe('SessionsStore', () => {
 
     expect(store.getSnapshot().list.find(s => s.id === 'del-1')).toBeUndefined();
     expect(await getSession('del-1')).toBeUndefined();
-    expect(await getReadings('del-1')).toEqual([]);
+    expect(await readSamples('del-1', 'v')).toEqual([]);
   });
 
   it('remove closes the opened session when it is the one being deleted', async () => {
@@ -241,8 +258,8 @@ describe('SessionsStore CSV export', () => {
   });
 
   it('exportSessionCsv slugs the name into the filename and triggers a download', async () => {
-    await createSession(session('exp-1', 'My Export'));
-    await appendSamples('exp-1', 0, [reading(1, 42)]);
+    await createSession(session('exp-1', 'My Export', 1000, [meterChannel('v')]));
+    await appendSamples('exp-1', 'v', 0, [reading(1, 42)]);
     stubDom();
 
     await exportSessionCsv({ id: 'exp-1', name: 'My Export' });
@@ -253,9 +270,9 @@ describe('SessionsStore CSV export', () => {
   });
 
   it('SessionsStore.exportCsv delegates to the standalone exporter', async () => {
-    const sess = session('exp-2', 'Other');
+    const sess = session('exp-2', 'Other', 1000, [meterChannel('v')]);
     await createSession(sess);
-    await appendSamples('exp-2', 0, [reading(1, 1), reading(2, 2)]);
+    await appendSamples('exp-2', 'v', 0, [reading(1, 1), reading(2, 2)]);
     stubDom();
 
     const store = new SessionsStore();
