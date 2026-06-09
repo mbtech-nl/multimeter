@@ -40,7 +40,9 @@ export function PinSession({
   const { active, readings, undoLast, stop } = state;
   const summary = matchSummary(readings);
 
-  const exportCsv = () => downloadText(toCsv(readings), `${slug('pins')}-${readings.length}.csv`);
+  // A pin session is one channel — long CSV with a single 'Pins' channel (N=1).
+  const exportCsv = () =>
+    downloadText(toCsv([{ channel: 'Pins', readings }]), `${slug('pins')}-${readings.length}.csv`);
 
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2">

@@ -28,3 +28,15 @@ export function resolveStroke(key: string, dark: boolean): string {
   const c = CHART_COLORS.find(x => x.key === key) ?? CHART_COLORS[0]!;
   return dark ? c.dark : c.light;
 }
+
+// Per-channel series colors (Phase 7 multi-series chart). The first channel uses the user's chosen
+// preset (so the single-meter case is unchanged); additional channels cycle through the remaining
+// presets, theme-resolved, so each channel + derived line reads distinctly. Deterministic by index
+// so colors are stable across re-renders.
+export function seriesStroke(index: number, chosenKey: string, dark: boolean): string {
+  if (index === 0) return resolveStroke(chosenKey, dark);
+  // Order the rest after the chosen one, skipping it, so channel 1 isn't the same hue as channel 0.
+  const rest = CHART_COLORS.filter(c => c.key !== chosenKey);
+  const c = rest[(index - 1) % rest.length]!;
+  return dark ? c.dark : c.light;
+}

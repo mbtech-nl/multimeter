@@ -1,21 +1,19 @@
-// The Sessions list + read-only viewer (PLAN §3.3): browse persisted recordings, reopen
-// one to inspect its chart/stats, re-export CSV/PNG, rename, or delete. Reuses LiveChart
-// and StatsPanel so a reopened session looks exactly like the live view. These are the
-// `/recordings` and `/recordings/:id` route components (App owns the routes).
+// The Sessions list + read-only multi-channel viewer (PLAN §3.3, plan-7.md §6): browse persisted
+// recordings, reopen one to inspect its multi-series chart + per-channel stats, re-export CSV/PNG,
+// rename, or delete. Reuses MultiChart + StatsPanel so a reopened session looks like the live view.
+// Derived channels were persisted as their own channel and are replayed directly (no recompute).
+// These are the `/recordings` and `/recordings/:id` route components (App owns the routes).
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { Session } from '@ble-multimeter/protocol';
-import { computeStats, splitSegments } from '@ble-multimeter/protocol';
-import type { Sessions } from '@ble-multimeter/react';
-import { LiveChart, type LiveChartHandle } from './LiveChart';
+import { computeStats, toSample } from '@ble-multimeter/protocol';
+import type { Sessions, OpenedChannel } from '@ble-multimeter/react';
+import { MultiChart, type MultiChartHandle, type ChartSeries } from './MultiChart';
 import { StatsPanel } from './StatsPanel';
 import { ExportButtons } from './ExportButtons';
 import { ConfirmDialog, PromptDialog } from './Dialog';
-
-// The read-only viewer groups a recording's readings into contiguous same-quantity segments
-// (PLAN §3.4) via the shared splitSegments (protocol), so a multi-mode recording is browsable
-// per segment with the exact same rule the CSV export uses.
+import { seriesStroke } from '../lib/chartColors';
 
 function fmtTime(ms: number): string {
   return new Date(ms).toLocaleString();
@@ -24,7 +22,6 @@ function fmtTime(ms: number): string {
 export function SessionsList({ sessions }: { sessions: Sessions }) {
   const { list, refresh, remove, rename, exportCsv } = sessions;
   const navigate = useNavigate();
-  // Themed dialogs replace native prompt()/confirm(); track which session each acts on.
   const [renaming, setRenaming] = useState<Session | null>(null);
   const [deleting, setDeleting] = useState<Session | null>(null);
 
@@ -38,8 +35,8 @@ export function SessionsList({ sessions }: { sessions: Sessions }) {
       <h2 className="mb-3 text-lg font-semibold text-zinc-100">Recordings</h2>
       {list.length === 0 ? (
         <p className="text-sm text-zinc-500">
-          No recordings yet. Connect, hit ● Record on the live screen, and your sessions show up
-          here — they survive a reload.
+          No recordings yet. Hit ● Record on the live screen, and your sessions show up here — they
+          survive a reload.
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -52,7 +49,7 @@ export function SessionsList({ sessions }: { sessions: Sessions }) {
                 <div className="truncate text-sm font-semibold text-zinc-100">{s.name}</div>
                 <div className="text-xs text-zinc-500">
                   {fmtTime(s.startedAt)} · {s.sampleCount} samples ·{' '}
-                  {s.segments.map(g => g.function).join(' → ') || '—'}
+                  {(s.channels ?? []).map(c => c.label).join(', ') || '—'}
                   {s.endedAt === null && <span className="ml-1 text-amber-500">· unfinished</span>}
                 </div>
               </div>
@@ -89,35 +86,44 @@ export function SessionsList({ sessions }: { sessions: Sessions }) {
   );
 }
 
+// A reopened channel's chart samples + stats. Derived channels carry their own persisted samples,
+// so the chart is a faithful replay of what was on screen — no recompute.
+function channelSeries(channel: OpenedChannel, index: number, colorKey: string, dark: boolean): ChartSeries {
+  const last = channel.readings[channel.readings.length - 1];
+  return {
+    id: channel.id,
+    label: channel.label,
+    unit: last?.baseUnit ?? '',
+    color: seriesStroke(index, colorKey, dark),
+    samples: channel.readings.map((r, i) => toSample(r, i)),
+  };
+}
+
 export function SessionViewer({
   sessions,
   dark,
-  strokeColor,
+  colorKey,
 }: {
   sessions: Sessions;
   dark: boolean;
-  strokeColor?: string;
+  colorKey: string;
 }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const { opened, open } = sessions;
   const ready = !!opened && opened.session.id === id;
 
-  // Load the bookmarked/clicked session whenever the :id doesn't match what's already open —
-  // covers a fresh page load straight onto /recordings/:id as well as switching between sessions.
   useEffect(() => {
     if (id && (!opened || opened.session.id !== id)) open(id);
   }, [id, opened, open]);
 
-  const chartRef = useRef<LiveChartHandle>(null);
-  const segments = useMemo(() => (ready ? splitSegments(opened!.readings) : []), [ready, opened]);
-  const [segIdx, setSegIdx] = useState(0);
-  useEffect(() => setSegIdx(0), [id]); // reset to first segment when switching sessions
-  const seg = segments[segIdx];
+  const chartRef = useRef<MultiChartHandle>(null);
 
-  const stats = useMemo(() => computeStats(seg ? seg.samples.map(s => s.v) : []), [seg]);
-  const durationMs =
-    seg && seg.samples.length > 1 ? seg.samples[seg.samples.length - 1]!.t - seg.samples[0]!.t : 0;
+  const series: ChartSeries[] = useMemo(
+    () =>
+      ready ? opened!.channels.map((c, i) => channelSeries(c, i, colorKey, dark)) : [],
+    [ready, opened, colorKey, dark],
+  );
 
   if (!ready) {
     return (
@@ -131,9 +137,10 @@ export function SessionViewer({
   }
 
   const session = opened!.session;
+  const channels = opened!.channels;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-4">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-4">
       <div className="flex flex-wrap items-center gap-3">
         <Btn onClick={() => navigate('/recordings')}>← Back</Btn>
         <h2 className="min-w-0 flex-1 truncate text-lg font-semibold text-zinc-100">
@@ -142,39 +149,29 @@ export function SessionViewer({
         <ExportButtons chartRef={chartRef} csvTarget={{ id: session.id, name: session.name }} />
       </div>
 
-      {segments.length > 1 && (
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Recording segment">
-          {segments.map((g, i) => (
-            <button
-              key={i}
-              onClick={() => setSegIdx(i)}
-              aria-pressed={i === segIdx}
-              className={`rounded px-2 py-0.5 text-xs ${
-                i === segIdx
-                  ? 'bg-emerald-500/20 text-emerald-700 ring-1 ring-emerald-500/40 dark:text-emerald-300'
-                  : 'text-zinc-400 hover:bg-zinc-800'
-              }`}
-            >
-              {g.info.function}
-              {g.info.acdc ? ` ${g.info.acdc}` : ''}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {seg ? (
-        <>
-          <LiveChart
-            ref={chartRef}
-            samples={seg.samples}
-            segment={seg.info}
-            dark={dark}
-            strokeColor={strokeColor}
-          />
-          <StatsPanel stats={stats} unit={seg.info.unit} durationMs={durationMs} />
-        </>
-      ) : (
+      {channels.length === 0 ? (
         <p className="text-sm text-zinc-500">This recording has no samples.</p>
+      ) : (
+        <>
+          <MultiChart ref={chartRef} series={series} dark={dark} />
+          {channels.map((c, i) => {
+            const samples = c.readings.map((r, j) => toSample(r, j));
+            const stats = computeStats(samples.map(s => s.v));
+            const durationMs =
+              samples.length > 1 ? samples[samples.length - 1]!.t - samples[0]!.t : 0;
+            const unit = c.readings[c.readings.length - 1]?.baseUnit ?? '';
+            return (
+              <div key={c.id} className="flex flex-col gap-1">
+                <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  {c.label}
+                  {unit ? ` · ${unit}` : ''}
+                  <span className="ml-2 inline-block h-2 w-2 rounded-sm align-middle" style={{ backgroundColor: seriesStroke(i, colorKey, dark) }} aria-hidden="true" />
+                </div>
+                <StatsPanel stats={stats} unit={unit} durationMs={durationMs} />
+              </div>
+            );
+          })}
+        </>
       )}
     </div>
   );

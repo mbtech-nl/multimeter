@@ -1,25 +1,24 @@
-// Phases 1–4. Live readout + chart + stats + recording + export, a Sessions browser,
-// light/dark theme, and keyboard shortcuts. One rolling history buffer (useRecorder) feeds
-// the chart and stats always; recording layers IndexedDB persistence on top (the reason
-// Phases 2+3 merged). A single top bar holds status, view tabs, and global actions. Routes
-// (HashRouter, see main.tsx): `/` live, `/recordings` list, `/recordings/:id` one session —
-// so Back works and a session is bookmarkable.
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+// Phase 7. A multi-channel dashboard: N meter channels (real or demo) + derived channels
+// (P = V × I, …), charted together on one multi-series chart, with per-channel stats and one shared
+// recording that spans every channel. `useMeters` owns the coordinator (per-meter sessions +
+// derived recompute); `useRecorder(meters.channels)` is the shared multi-channel recorder. A single
+// top bar holds global actions + view tabs. Routes (HashRouter, see main.tsx): `/` live,
+// `/recordings` list, `/recordings/:id` one session.
+//
+// Demo (`?demo`) auto-streams; `?demo=power` preloads V + I meters + a P=V×I derived channel — the
+// headline two-device scenario, exercisable without hardware.
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { useMeter } from '@ble-multimeter/react';
-import { useRecorder } from '@ble-multimeter/react';
-import { useSessions } from '@ble-multimeter/react';
-import { usePinSession } from '@ble-multimeter/react';
-import type { Reading } from '@ble-multimeter/protocol';
+import { useMeters, useRecorder, useSessions, usePinSession } from '@ble-multimeter/react';
+import type { Meters, MeterChannel } from '@ble-multimeter/react';
 import { useTheme } from './hooks/useTheme';
 import { useChartColor } from './hooks/useChartColor';
-import { resolveStroke } from './lib/chartColors';
-import { ConnectionStatus, DeviceMenu, connectionAction } from './components/ConnectionChip';
-import { HeroReadout } from './components/HeroReadout';
-import { CopyButton } from './components/CopyButton';
-import { MeterControls } from './components/MeterControls';
-import type { LiveChartHandle } from './components/LiveChart';
+import { seriesStroke } from './lib/chartColors';
+import { MeterCard } from './components/MeterCard';
+import { DerivedCard } from './components/DerivedCard';
+import { DerivedBuilder } from './components/DerivedBuilder';
 import { StatsPanel } from './components/StatsPanel';
+import type { MultiChartHandle, ChartSeries } from './components/MultiChart';
 import { RecordControls } from './components/RecordControls';
 import { ExportButtons } from './components/ExportButtons';
 import { PinSession } from './components/PinSession';
@@ -29,12 +28,8 @@ import { ShortcutsHelp } from './components/ShortcutsHelp';
 import { UnsupportedBrowser } from './components/UnsupportedBrowser';
 import { exportCsv, exportPng } from './lib/exporters';
 
-// Code-split the two uPlot-heavy views so the initial bundle (welcome / connect screen) stays
-// lean: uPlot only loads once there's something to chart. LiveChart loads on connect; the whole
-// Recordings view loads when its tab is first opened. Both are named exports → unwrap to default.
-const LiveChart = lazy(() =>
-  import('./components/LiveChart').then(m => ({ default: m.LiveChart })),
-);
+// Code-split the uPlot-heavy chart + the whole Recordings view so the initial bundle stays lean.
+const MultiChart = lazy(() => import('./components/MultiChart').then(m => ({ default: m.MultiChart })));
 const SessionsList = lazy(() =>
   import('./components/SessionsList').then(m => ({ default: m.SessionsList })),
 );
@@ -43,8 +38,8 @@ const SessionViewer = lazy(() =>
 );
 
 export default function App() {
-  const meter = useMeter();
-  const recorder = useRecorder(meter.reading);
+  const meters = useMeters();
+  const recorder = useRecorder(meters.channels);
   const sessions = useSessions();
   const pinSession = usePinSession();
   const { theme, toggle } = useTheme();
@@ -55,27 +50,42 @@ export default function App() {
   const onRecordings = location.pathname.startsWith('/recordings');
   const [helpOpen, setHelpOpen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
-  // Fake HOLD (the meter ignores button commands, §PROTOCOL 2): a UI-side freeze of the hero
-  // readout to a snapshot, so you can capture a value to read hands-free. The chart, stats and
-  // recording keep running on the live stream underneath — only the big number is frozen.
-  const [held, setHeld] = useState<Reading | null>(null);
-  const chartRef = useRef<LiveChartHandle>(null);
+  const chartRef = useRef<MultiChartHandle>(null);
   const announceNonce = useRef(0);
   const dark = theme === 'dark';
-  const chartStroke = resolveStroke(colorKey, dark);
-  // The reading the hero shows: the frozen snapshot while holding, else the live value.
-  const displayReading = held ?? meter.reading;
 
-  // Hold is a live-only convenience — release it whenever we leave the live stream so a stale
-  // value can't linger across a disconnect/reconnect.
-  useEffect(() => {
-    if (meter.state !== 'live') setHeld(null);
-  }, [meter.state]);
+  // The chart series: one per recorder channel view, colored per index (channel 0 = chosen color),
+  // grouped onto y-scales by unit downstream. Pull samples from the recorder (the live buffer).
+  const series: ChartSeries[] = useMemo(
+    () =>
+      recorder.channels.map((c, i) => ({
+        id: c.id,
+        label: c.label,
+        unit: c.segment?.unit ?? '',
+        color: seriesStroke(i, colorKey, dark),
+        samples: c.samples,
+      })),
+    [recorder.channels, colorKey, dark],
+  );
+  const anyTruncated = recorder.channels.some(c => c.truncated);
+  const hasData = recorder.channels.some(c => c.samples.length > 0);
 
-  // Clean the home URL: HashRouter writes '#/' for the root route, but we want the index to be
-  // the bare base path (…/multimeter/), not …/multimeter/#/. An empty hash maps to '/' just like
-  // '#/' does, so stripping it keeps the router in sync (it re-reads an empty hash as '/'). Deeper
-  // routes (#/recordings…) are untouched. replaceState fires no hashchange/popstate → no loop.
+  // First-run welcome: not in demo, a single meter that has never connected and has no reading.
+  // Show a focused "connect your first meter" invite instead of an empty card + chart + stats —
+  // one meter is the common case, so don't make the user hunt for the connect control.
+  const firstRun =
+    !meters.isDemo &&
+    meters.meters.length === 1 &&
+    meters.meters[0]!.state === 'idle' &&
+    !hasData;
+
+  // Card grid columns scale with the number of cards so they fill the row: 1 = full width,
+  // 2 = half/half, 3+ = a 3-col grid (wraps to more rows). Cards = meters + derived channels.
+  const cardCount = meters.meters.length + meters.derived.length;
+  const gridCols =
+    cardCount <= 1 ? 'grid-cols-1' : cardCount === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3';
+
+  // Clean the home URL (HashRouter writes '#/' for root; we want the bare base path).
   useEffect(() => {
     if (location.pathname === '/' && window.location.hash) {
       window.history.replaceState(
@@ -86,26 +96,24 @@ export default function App() {
     }
   }, [location]);
 
-  const toggleHold = () => setHeld(h => (h ? null : meter.reading));
+  // Pin captures the first live meter channel's reading (the primary measurement).
+  const primaryReading = meters.meters.find(m => m.reading)?.reading ?? null;
   const pinReading = () => {
-    if (displayReading) pinSession.pin(displayReading);
+    if (primaryReading) pinSession.pin(primaryReading);
   };
 
-  // Announce the live reading to the polite live region on demand (the meter updates a few
-  // Hz — far too fast to announce continuously, so it's opt-in via the `s` shortcut). The
-  // alternating zero-width space forces AT to re-read even an unchanged value.
+  // Announce the primary reading to the polite live region on demand (`s`).
   const announceReading = () => {
-    const r = displayReading;
+    const r = primaryReading;
     const text = !r
       ? 'No reading'
       : r.overload
         ? `${r.function} overload`
         : `${r.function} ${r.displayText || 'no value'} ${r.displayUnit}`.trim();
-    setAnnouncement(text + '\u200B'.repeat(announceNonce.current++ % 2));
+    setAnnouncement(text + '​'.repeat(announceNonce.current++ % 2));
   };
 
-  // Global keyboard shortcuts. Bound once; a ref always points at the latest closure so we
-  // see current state without re-subscribing. Ignored while typing or with a modifier held.
+  // Global keyboard shortcuts. Bound once; a ref always points at the latest closure.
   const onKey = (e: KeyboardEvent) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const t = e.target as HTMLElement | null;
@@ -121,18 +129,11 @@ export default function App() {
       case 't':
         toggle();
         break;
-      case 'c':
-        connectionAction(meter)?.run();
-        break;
-      case 'b':
-        if (meter.state === 'live') meter.toggleBacklight();
-        break;
-      case 'h':
-        if (meter.state === 'live') toggleHold();
+      case 'm':
+        if (meters.isDemo) meters.addDemoMeter();
+        else meters.addRealMeter();
         break;
       case ' ': {
-        // Space = pin. Let it activate a focused button/link/select normally (and not scroll
-        // the page otherwise); only capture when focus isn't on another interactive control.
         if (t && t.closest('button, a, select, [role="button"]')) return;
         e.preventDefault();
         pinReading();
@@ -150,7 +151,7 @@ export default function App() {
         if (recorder.csvTarget) void exportCsv(recorder.csvTarget);
         break;
       case 'i':
-        void exportPng(chartRef.current, recorder.csvTarget?.name ?? 'ut60bt-chart');
+        void exportPng(chartRef.current, recorder.csvTarget?.name ?? 'multimeter-chart');
         break;
       case 'v':
         navigate(onLive ? '/recordings' : '/');
@@ -170,7 +171,10 @@ export default function App() {
     return () => window.removeEventListener('keydown', h);
   }, []);
 
-  if (meter.state === 'unsupported') return <UnsupportedBrowser />;
+  // Unsupported only matters for real BLE — demo still runs. If no demo and no Web Bluetooth, the
+  // sole meter channel reports 'unsupported'.
+  const unsupported = !meters.isDemo && meters.meters.every(m => m.state === 'unsupported');
+  if (unsupported) return <UnsupportedBrowser />;
 
   const tabs = (className: string) => (
     <nav aria-label="Views" className={className}>
@@ -185,15 +189,10 @@ export default function App() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-zinc-950 text-zinc-100">
-      {/* Single bar on sm+; on narrow screens the tabs drop to a full-width row below so the
-          status + global actions still fit the top row (HANDOFF responsive note). */}
       <header className="border-b border-zinc-800">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2">
-          <ConnectionStatus meter={meter} />
-          <DeviceMenu meter={meter} />
-
+          <span className="text-sm font-semibold text-zinc-200">Multimeter</span>
           {tabs('hidden gap-1 sm:flex')}
-
           <div className="ml-auto flex items-center gap-2">
             <ChartColorPicker value={colorKey} onChange={setColorKey} dark={dark} />
             <ThemeToggle dark={dark} onToggle={toggle} />
@@ -207,7 +206,6 @@ export default function App() {
             </button>
           </div>
         </div>
-
         {tabs('flex gap-1 border-t border-zinc-800 px-2 py-1 sm:hidden')}
       </header>
 
@@ -217,77 +215,98 @@ export default function App() {
             <Route
               path="/"
               element={
-                displayReading ? (
-                  <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-4 py-4">
-                    <HeroReadout reading={displayReading} held={held !== null} />
-                    <div className="-mt-2 flex items-center justify-center gap-2">
-                      <CopyButton reading={displayReading} />
-                      {meter.state === 'live' && (
-                        <button
-                          onClick={toggleHold}
-                          aria-pressed={held !== null}
-                          className={`rounded-md px-4 py-1.5 text-sm ${
-                            held
-                              ? 'bg-amber-500 font-semibold text-amber-950 hover:bg-amber-400'
-                              : 'border border-zinc-700 text-zinc-300 hover:bg-zinc-800'
-                          }`}
-                        >
-                          {held ? 'Holding' : 'Hold'}
-                        </button>
-                      )}
-                    </div>
-                    {meter.state === 'live' && (
-                      <MeterControls controls={meter.controls} onPress={meter.sendControl} />
-                    )}
+                firstRun ? (
+                  <Welcome meter={meters.meters[0]!} meters={meters} />
+                ) : (
+                <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-4">
+                  {/* Meter + derived cards — the column count scales with the card count so a
+                      single meter spans the full row (not stuffed in a corner). */}
+                  <div className={`grid grid-cols-1 gap-3 ${gridCols}`}>
+                    {meters.meters.map(c => (
+                      <MeterCard
+                        key={c.id}
+                        channel={c}
+                        meters={meters}
+                        removable={meters.meters.length > 1}
+                      />
+                    ))}
+                    {meters.derived.map(c => (
+                      <DerivedCard key={c.id} channel={c} meters={meters} />
+                    ))}
+                  </div>
+
+                  {/* Add a meter (demo adds a profiled demo meter; real fires its own gesture) */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => (meters.isDemo ? meters.addDemoMeter() : meters.addRealMeter())}
+                      className="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-200 hover:bg-zinc-800"
+                    >
+                      + Add {meters.isDemo ? 'demo ' : ''}meter
+                    </button>
+                    <DerivedBuilder meters={meters} />
+                  </div>
+
+                  {/* Multi-series chart */}
+                  {hasData ? (
                     <Suspense fallback={<ChartSkeleton />}>
-                      <LiveChart
+                      <MultiChart
                         ref={chartRef}
-                        samples={recorder.samples}
-                        segment={recorder.segment}
-                        truncated={recorder.truncated}
+                        series={series}
                         dark={dark}
-                        strokeColor={chartStroke}
+                        truncated={anyTruncated}
                       />
                     </Suspense>
-                    <StatsPanel
-                      stats={recorder.stats}
-                      unit={recorder.segment?.unit ?? ''}
-                      durationMs={recorder.statsDurationMs}
-                      onReset={recorder.resetStats}
-                    />
-                    <RecordControls
-                      recState={recorder.recState}
-                      recCount={recorder.recCount}
-                      onRecord={recorder.record}
-                      onPause={recorder.pause}
-                      onResume={recorder.resume}
-                      onStop={recorder.stop}
-                    />
-                    <ExportButtons chartRef={chartRef} csvTarget={recorder.csvTarget} />
-                    <PinSession
-                      state={pinSession}
-                      onPin={pinReading}
-                      canPin={displayReading !== null}
-                    />
-                  </div>
-                ) : (
-                  <Placeholder meter={meter} />
+                  ) : (
+                    <EmptyChart isDemo={meters.isDemo} />
+                  )}
+
+                  {/* Per-channel statistics */}
+                  {recorder.channels.map(c => (
+                    <div key={c.id} className="flex flex-col gap-1">
+                      <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                        {c.label}
+                        {c.segment?.unit ? ` · ${c.segment.unit}` : ''}
+                      </div>
+                      <StatsPanel
+                        stats={c.stats}
+                        unit={c.segment?.unit ?? ''}
+                        durationMs={c.statsDurationMs}
+                        onReset={recorder.resetStats}
+                      />
+                    </div>
+                  ))}
+
+                  <RecordControls
+                    recState={recorder.recState}
+                    recCount={recorder.recCount}
+                    onRecord={recorder.record}
+                    onPause={recorder.pause}
+                    onResume={recorder.resume}
+                    onStop={recorder.stop}
+                  />
+                  <ExportButtons chartRef={chartRef} csvTarget={recorder.csvTarget} />
+                  <PinSession
+                    state={pinSession}
+                    onPin={pinReading}
+                    canPin={primaryReading !== null}
+                  />
+                </div>
                 )
               }
             />
             <Route path="/recordings" element={<SessionsList sessions={sessions} />} />
             <Route
               path="/recordings/:id"
-              element={<SessionViewer sessions={sessions} dark={dark} strokeColor={chartStroke} />}
+              element={<SessionViewer sessions={sessions} dark={dark} colorKey={colorKey} />}
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </main>
 
-      {meter.error && (
+      {meters.meters.find(m => m.error)?.error && (
         <div className="border-t border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-          {meter.error}
+          {meters.meters.find(m => m.error)?.error}
         </div>
       )}
 
@@ -305,7 +324,6 @@ export default function App() {
         </a>
       </footer>
 
-      {/* Polite live region for the on-demand reading announcement (visually hidden). */}
       <div aria-live="polite" role="status" className="sr-only">
         {announcement}
       </div>
@@ -337,8 +355,6 @@ function Tab({
   );
 }
 
-// Suspense fallbacks while the code-split chunks load. The chart skeleton reserves the chart's
-// height (≈ header + 280px canvas) so the dashboard doesn't jump when it swaps in.
 function ChartSkeleton() {
   return (
     <div
@@ -350,6 +366,41 @@ function ChartSkeleton() {
   );
 }
 
+function EmptyChart({ isDemo }: { isDemo: boolean }) {
+  return (
+    <div className="flex h-[200px] w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-800 text-center text-sm text-zinc-500">
+      <span>No data yet.</span>
+      <span className="text-xs">
+        {isDemo
+          ? 'Demo meters stream automatically — values should appear momentarily.'
+          : 'Connect a meter (click its status) to start charting.'}
+      </span>
+    </div>
+  );
+}
+
+// First-run invite (non-demo, nothing connected yet): a focused, centered call to connect the
+// first meter — the common single-meter case — instead of an empty card + chart + stats grid.
+// Once the user connects, App leaves first-run and the full dashboard takes over.
+function Welcome({ meter, meters }: { meter: MeterChannel; meters: Meters }) {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
+      <h1 className="text-3xl font-bold text-zinc-100">Multimeter</h1>
+      <p className="max-w-md text-zinc-400">
+        A live, full-screen readout for your Bluetooth multimeter — with charting, recording, and
+        CSV/PNG export. Power on the meter, then connect. You can add more meters (and derive values
+        like P = V × I) once the first is live.
+      </p>
+      <button
+        onClick={() => meters.meterSession(meter.id)?.connect()}
+        className="rounded-lg bg-emerald-500 px-6 py-3 text-lg font-semibold text-emerald-950 hover:bg-emerald-400"
+      >
+        Connect a meter
+      </button>
+    </div>
+  );
+}
+
 function Loading({ label }: { label: string }) {
   return (
     <div
@@ -357,41 +408,6 @@ function Loading({ label }: { label: string }) {
       role="status"
     >
       {label}
-    </div>
-  );
-}
-
-function Placeholder({ meter }: { meter: ReturnType<typeof useMeter> }) {
-  const { state } = meter;
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
-      <h1 className="text-3xl font-bold text-zinc-100">UT60BT</h1>
-      <p className="max-w-sm text-zinc-400">
-        A live, full-screen readout for your UNI-T UT60BT multimeter — with charting, recording, and
-        CSV/PNG export. Power on the meter, then connect.
-      </p>
-
-      {state === 'idle' && (
-        <button
-          onClick={meter.connect}
-          className="rounded-lg bg-emerald-500 px-6 py-3 text-lg font-semibold text-emerald-950 hover:bg-emerald-400"
-        >
-          Connect
-        </button>
-      )}
-
-      {(state === 'connecting' || state === 'reconnecting') && (
-        <p className="text-zinc-400">Pairing… choose your meter in the browser dialog.</p>
-      )}
-
-      {state === 'disconnected' && (
-        <button
-          onClick={meter.reconnect}
-          className="rounded-lg bg-emerald-500 px-6 py-3 text-lg font-semibold text-emerald-950 hover:bg-emerald-400"
-        >
-          Reconnect
-        </button>
-      )}
     </div>
   );
 }

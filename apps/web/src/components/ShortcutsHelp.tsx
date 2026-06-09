@@ -9,9 +9,7 @@ export interface Shortcut {
 
 // Single source of truth, shared with App's key handler so the two can't drift.
 export const SHORTCUTS: Shortcut[] = [
-  { keys: 'c', label: 'Connect / disconnect the meter' },
-  { keys: 'b', label: 'Toggle the meter backlight' },
-  { keys: 'h', label: 'Hold / release the readout' },
+  { keys: 'm', label: 'Add a meter channel' },
   { keys: 'Space', label: 'Pin the current reading' },
   { keys: 'r', label: 'Start / stop recording' },
   { keys: 'p', label: 'Pause / resume recording' },

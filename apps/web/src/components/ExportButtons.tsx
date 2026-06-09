@@ -5,11 +5,11 @@
 // the keyboard shortcuts share it exactly.
 
 import type { RefObject } from 'react';
-import type { LiveChartHandle } from './LiveChart';
+import type { MultiChartHandle } from './MultiChart';
 import { exportCsv, exportPng } from '../lib/exporters';
 
 interface Props {
-  chartRef: RefObject<LiveChartHandle | null>;
+  chartRef: RefObject<MultiChartHandle | null>;
   // The recording to export to CSV (active or most-recent). null → nothing recorded yet.
   csvTarget: { id: string; name: string } | null;
 }
