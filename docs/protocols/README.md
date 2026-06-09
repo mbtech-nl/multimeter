@@ -1,9 +1,8 @@
 # Driver protocol specs
 
 One markdown per driver — transport, handshake, frame format, decode, controls, and verification
-state, derived from the driver source under `packages/protocol/src/drivers/`. For where each protocol
-was sourced and what's confirmed vs inferred, see [`../../PROVENANCE.md`](../../PROVENANCE.md). For the
-device support matrix, see [`../HARDWARE.md`](../HARDWARE.md).
+state, derived from the driver source under `packages/protocol/src/drivers/`. For the device support
+matrix, see [`../HARDWARE.md`](../HARDWARE.md).
 
 ## State legend
 
