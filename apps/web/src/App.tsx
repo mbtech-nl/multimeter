@@ -102,6 +102,25 @@ export default function App() {
     if (primaryReading) pinSession.pin(primaryReading);
   };
 
+  // Auto-pin on HOLD: when a meter's hold flag goes false→true, capture its (now frozen) reading
+  // into the pin session. Driven by the decoded `hold` bit, so it fires whether HOLD was pressed in
+  // the app or on the meter's own physical button — both land in the frame. One pin per engagement;
+  // releasing hold re-arms it.
+  const pin = pinSession.pin;
+  const heldRef = useRef<Map<string, boolean>>(new Map());
+  useEffect(() => {
+    const live = new Set<string>();
+    for (const m of meters.meters) {
+      live.add(m.id);
+      const held = !!m.reading?.flags.hold;
+      const wasHeld = heldRef.current.get(m.id) ?? false;
+      if (held && !wasHeld && m.reading) pin(m.reading);
+      heldRef.current.set(m.id, held);
+    }
+    // Forget removed meters so a re-added channel id re-arms cleanly.
+    for (const id of [...heldRef.current.keys()]) if (!live.has(id)) heldRef.current.delete(id);
+  }, [meters.meters, pin]);
+
   // Announce the primary reading to the polite live region on demand (`s`).
   const announceReading = () => {
     const r = primaryReading;
